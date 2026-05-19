@@ -15,7 +15,7 @@
 import {
   ContentFormat,
   ContentStatus,
-  Prisma,
+  type Prisma,
   PrismaClient,
   QCRuleSeverity,
   QCRuleType,

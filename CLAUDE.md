@@ -121,7 +121,8 @@ Tokens TailwindCSS (en `packages/ui/tokens.ts`):
   - **Validación end-to-end pendiente**: levantar docker (`pnpm infra:up`) y correr
     `pnpm db:migrate && pnpm db:seed` para verificar que el seed crea las personas,
     presets, reglas y piezas demo sin errores.
-- [ ] **Fase 2**: endpoint `/api/v1/content-pieces/ingest` + validación + notificaciones.
+- [x] **Fase 2**: endpoint `/api/v1/content-pieces/ingest` + validación cruzada por
+  plataforma + persistencia idempotente + SSE + endpoints de notificaciones.
 - [ ] **Fase 3**: cola de validación + UI QC + checklist + sidebar pendientes.
 - [ ] **Fase 4**: calendario visual + drag&drop + PWA + atajos + auto-refresh.
 - [ ] **Fase 5**: worker de publicación + adaptadores IG/FB/TT + reintentos + webhooks.

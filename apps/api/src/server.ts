@@ -10,7 +10,9 @@ import authPlugin from './middleware/authPlugin.js';
 import authRoutes from './routes/auth.js';
 import healthRoutes from './routes/health.js';
 import ingestRoutes from './routes/ingest.js';
+import notificationsRoutes from './routes/notifications.js';
 import oauthRoutes from './routes/oauth.js';
+import sseRoutes from './routes/sse.js';
 
 export async function buildServer() {
   const config = loadConfig();
@@ -30,6 +32,8 @@ export async function buildServer() {
   await app.register(healthRoutes);
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
   await app.register(ingestRoutes, { prefix: '/api/v1' });
+  await app.register(notificationsRoutes, { prefix: '/api/v1' });
+  await app.register(sseRoutes, { prefix: '/sse' });
   await app.register(oauthRoutes, { prefix: '/auth' });
 
   app.setErrorHandler((err, _req, reply) => {
