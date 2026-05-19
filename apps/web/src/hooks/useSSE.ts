@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { isMockApiEnabled } from '../lib/mockApi.js';
 
 /**
  * Conecta al endpoint SSE `/sse/notifications` y, al recibir un evento, invalida
@@ -9,7 +10,7 @@ export function useSSE(enabled: boolean) {
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || isMockApiEnabled()) return;
     const es = new EventSource('/sse/notifications', { withCredentials: true });
 
     const refresh = () => {
