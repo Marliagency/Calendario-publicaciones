@@ -98,13 +98,13 @@ export default async function contentPiecesRoutes(app: FastifyInstance) {
       reply.code(404);
       return { error: 'NOT_FOUND' };
     }
-    if (!canTransition(piece.status, 'APPROVED')) {
-      reply.code(409);
-      return { error: 'INVALID_TRANSITION', from: piece.status, to: 'APPROVED' };
-    }
-
-    const allScheduled = piece.variants.every((v) => v.scheduledAt !== null);
+    const allScheduled =
+      piece.variants.length > 0 && piece.variants.every((v) => v.scheduledAt !== null);
     const nextStatus: ContentStatus = allScheduled ? 'SCHEDULED' : 'APPROVED';
+    if (piece.status !== nextStatus && !canTransition(piece.status, nextStatus)) {
+      reply.code(409);
+      return { error: 'INVALID_TRANSITION', from: piece.status, to: nextStatus };
+    }
 
     const updated = await prisma.contentPiece.update({
       where: { id },
