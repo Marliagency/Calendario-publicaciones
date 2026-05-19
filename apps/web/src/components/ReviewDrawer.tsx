@@ -124,8 +124,20 @@ function DrawerContent({
                   {v.ratio} · {v.durationS ? `${v.durationS}s` : 'imagen'}
                 </span>
               </div>
-              <div className="my-2 flex aspect-[9/16] max-h-40 items-center justify-center overflow-hidden rounded-card-sm bg-qyro-bg-canvas text-[10px] text-qyro-text-muted">
-                {v.mediaType === 'video' ? '🎬' : '🖼'} {v.mediaUrl.split('/').pop()}
+              <div className="my-2 relative aspect-[9/16] max-h-64 overflow-hidden rounded-card-sm bg-qyro-bg-canvas">
+                <img
+                  src={v.mediaUrl}
+                  alt={piece.title}
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+                {v.mediaType === 'video' && (
+                  <span className="absolute right-1 top-1 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
+                    🎬 {v.durationS}s
+                  </span>
+                )}
               </div>
               {v.caption && (
                 <p className="line-clamp-3 text-xs leading-snug text-qyro-text-primary">

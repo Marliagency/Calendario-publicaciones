@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280" role="img" aria-label="Antes vs después 30 días">
+  <title>Antes vs después de 30 días con QYRO</title>
+  <defs>
+    <linearGradient id="trans-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0B1220"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="trans-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2C7BFF"/>
+      <stop offset="50%" stop-color="#5AC8FA"/>
+      <stop offset="100%" stop-color="#7B61FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="1280" fill="url(#trans-bg)"/>
+
+  <!-- Top label -->
+  <text x="360" y="100" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="40" fill="#FFFFFF">Antes vs después</text>
+  <text x="360" y="150" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="28" fill="#5AC8FA">30 días con QYRO</text>
+
+  <!-- Antes (left) -->
+  <text x="180" y="240" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="28" fill="#EF4444">ANTES</text>
+  <rect x="40" y="270" width="280" height="260" rx="24" fill="#1E1B4B"/>
+  <text x="180" y="320" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="64" fill="#FFFFFF">25</text>
+  <text x="180" y="350" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="20" fill="#94A3B8">/100</text>
+  <text x="180" y="404" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="22" fill="#FFFFFF">Caótico</text>
+  <text x="180" y="438" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="18" fill="#94A3B8">5 apps</text>
+  <text x="180" y="466" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="18" fill="#94A3B8">0 hábitos</text>
+  <text x="180" y="494" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="18" fill="#94A3B8">sin tracking</text>
+
+  <!-- Después (right) -->
+  <text x="540" y="240" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="28" fill="#22C55E">DESPUÉS</text>
+  <rect x="400" y="270" width="280" height="260" rx="24" fill="url(#trans-grad)"/>
+  <text x="540" y="320" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="64" fill="#FFFFFF">70</text>
+  <text x="540" y="350" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="20" fill="#E0E7FF">/100</text>
+  <text x="540" y="404" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="22" fill="#FFFFFF">Optimizado</text>
+  <text x="540" y="438" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="18" fill="#E0E7FF">1 app</text>
+  <text x="540" y="466" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="18" fill="#E0E7FF">12 hábitos</text>
+  <text x="540" y="494" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="18" fill="#E0E7FF">PR semanal</text>
+
+  <!-- Big number diff -->
+  <text x="360" y="640" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="200" fill="url(#trans-grad)">+45</text>
+  <text x="360" y="700" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="32" fill="#FFFFFF">puntos de Life Score</text>
+
+  <!-- Habit checklist showing transformation -->
+  <g transform="translate(80 800)">
+    <rect width="560" height="60" rx="16" fill="#FFFFFF22"/>
+    <text x="30" y="40" font-family="Inter, sans-serif" font-size="30">🧘</text>
+    <text x="80" y="40" font-family="Inter, sans-serif" font-weight="700" font-size="24" fill="#FFFFFF">Meditar · 30 días seguidos</text>
+    <text x="500" y="40" text-anchor="middle" font-family="Inter, sans-serif" font-size="28" fill="#22C55E">✓</text>
+  </g>
+  <g transform="translate(80 880)">
+    <rect width="560" height="60" rx="16" fill="#FFFFFF22"/>
+    <text x="30" y="40" font-family="Inter, sans-serif" font-size="30">🏋️</text>
+    <text x="80" y="40" font-family="Inter, sans-serif" font-weight="700" font-size="24" fill="#FFFFFF">Entrenar · PR de 110 kg</text>
+    <text x="500" y="40" text-anchor="middle" font-family="Inter, sans-serif" font-size="28" fill="#22C55E">✓</text>
+  </g>
+  <g transform="translate(80 960)">
+    <rect width="560" height="60" rx="16" fill="#FFFFFF22"/>
+    <text x="30" y="40" font-family="Inter, sans-serif" font-size="30">📓</text>
+    <text x="80" y="40" font-family="Inter, sans-serif" font-weight="700" font-size="24" fill="#FFFFFF">Journal · 28 entradas</text>
+    <text x="500" y="40" text-anchor="middle" font-family="Inter, sans-serif" font-size="28" fill="#22C55E">✓</text>
+  </g>
+
+  <!-- Bottom QYRO sign -->
+  <g transform="translate(280 1080)">
+    <rect width="80" height="80" rx="20" fill="url(#trans-grad)"/>
+    <g fill="#FFFFFF" transform="translate(16 16) scale(0.1875)">
+      <path d="M128 64c35.346 0 64 28.654 64 64 0 17.06-6.68 32.554-17.566 44.024l16.92 16.92a8 8 0 1 1-11.314 11.314l-16.92-16.92C151.65 194.32 140.06 200 128 200c-39.764 0-72-32.236-72-72s32.236-64 72-64zm0 32c-22.091 0-40 17.909-40 40s17.909 40 40 40c11.046 0 21.046-4.477 28.284-11.716A39.86 39.86 0 0 0 168 136c0-22.091-17.909-40-40-40z"/>
+    </g>
+    <text x="100" y="56" font-family="Inter, sans-serif" font-weight="800" font-size="48" fill="#FFFFFF">QYRO</text>
+  </g>
+  <text x="360" y="1220" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="22" fill="#94A3B8">Resultados individuales pueden variar</text>
+</svg>

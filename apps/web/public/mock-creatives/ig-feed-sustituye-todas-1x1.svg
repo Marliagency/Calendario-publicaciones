@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" role="img" aria-label="QYRO sustituye 4 apps">
+  <title>Habitica, MyFitnessPal, Strong, Notion — esto las sustituye todas</title>
+  <defs>
+    <linearGradient id="feed-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F4F6FB"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <linearGradient id="feed-q-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2C7BFF"/>
+      <stop offset="50%" stop-color="#5AC8FA"/>
+      <stop offset="100%" stop-color="#7B61FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1080" fill="url(#feed-bg)"/>
+
+  <!-- Title -->
+  <text x="80" y="140" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#0B1220">Habitica.</text>
+  <text x="80" y="216" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#0B1220">MyFitnessPal.</text>
+  <text x="80" y="292" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#0B1220">Strong.</text>
+  <text x="80" y="368" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#0B1220">Notion.</text>
+
+  <!-- Arrow -->
+  <text x="80" y="500" font-family="Inter, sans-serif" font-weight="700" font-size="36" fill="#64748B">↓</text>
+  <text x="140" y="500" font-family="Inter, sans-serif" font-weight="700" font-size="36" fill="#64748B">esto las sustituye todas.</text>
+
+  <!-- 4 small apps to the right (faded) -->
+  <g opacity="0.4">
+    <rect x="620" y="100" width="160" height="160" rx="36" fill="#F97316"/>
+    <text x="700" y="208" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="72" fill="#FFFFFF">H</text>
+    <rect x="800" y="100" width="160" height="160" rx="36" fill="#22C55E"/>
+    <text x="880" y="208" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="72" fill="#FFFFFF">M</text>
+    <rect x="620" y="280" width="160" height="160" rx="36" fill="#EF4444"/>
+    <text x="700" y="388" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="72" fill="#FFFFFF">S</text>
+    <rect x="800" y="280" width="160" height="160" rx="36" fill="#0B1220"/>
+    <text x="880" y="388" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="72" fill="#FFFFFF">N</text>
+  </g>
+
+  <!-- Hero QYRO lockup centered -->
+  <g transform="translate(220 600)">
+    <rect width="240" height="240" rx="56" fill="url(#feed-q-grad)"/>
+    <g fill="#FFFFFF" transform="translate(56 56) scale(0.5)">
+      <path d="M128 64c35.346 0 64 28.654 64 64 0 17.06-6.68 32.554-17.566 44.024l16.92 16.92a8 8 0 1 1-11.314 11.314l-16.92-16.92C151.65 194.32 140.06 200 128 200c-39.764 0-72-32.236-72-72s32.236-64 72-64zm0 32c-22.091 0-40 17.909-40 40s17.909 40 40 40c11.046 0 21.046-4.477 28.284-11.716A39.86 39.86 0 0 0 168 136c0-22.091-17.909-40-40-40z"/>
+    </g>
+  </g>
+  <text x="500" y="752" font-family="Inter, sans-serif" font-weight="800" font-size="120" fill="#0B1220">QYRO</text>
+
+  <text x="80" y="960" font-family="Inter, sans-serif" font-weight="500" font-size="32" fill="#64748B">Una sola app. Tu vida entera.</text>
+  <text x="80" y="1010" font-family="Inter, sans-serif" font-weight="700" font-size="32" fill="#3B82F6">Vive mejor.</text>
+</svg>

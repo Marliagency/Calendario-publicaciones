@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280" role="img" aria-label="TikTok POV 5 apps QYRO">
+  <title>POV: 5 apps de salud abiertas y ninguna te dice si vas bien</title>
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B1220"/>
+      <stop offset="100%" stop-color="#1E1B4B"/>
+    </linearGradient>
+    <linearGradient id="q-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2C7BFF"/>
+      <stop offset="50%" stop-color="#5AC8FA"/>
+      <stop offset="100%" stop-color="#7B61FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="1280" fill="url(#bg-grad)"/>
+
+  <!-- Top hook label -->
+  <rect x="40" y="80" width="640" height="80" rx="20" fill="#FFFFFF"/>
+  <text x="360" y="135" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="40" fill="#0B1220">POV</text>
+
+  <!-- Main hook text -->
+  <text x="360" y="260" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#FFFFFF">tienes 5 apps</text>
+  <text x="360" y="328" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#FFFFFF">de salud abiertas</text>
+  <text x="360" y="412" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="48" fill="#5AC8FA">y ninguna te dice</text>
+  <text x="360" y="464" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="48" fill="#5AC8FA">si vas bien</text>
+
+  <!-- App icons scattered (representing fragmentation) -->
+  <g transform="translate(80 560)">
+    <rect width="120" height="120" rx="28" fill="#F97316" transform="rotate(-8 60 60)"/>
+    <text x="60" y="78" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#FFFFFF" transform="rotate(-8 60 60)">H</text>
+  </g>
+  <g transform="translate(240 540)">
+    <rect width="120" height="120" rx="28" fill="#22C55E" transform="rotate(4 60 60)"/>
+    <text x="60" y="78" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#FFFFFF" transform="rotate(4 60 60)">M</text>
+  </g>
+  <g transform="translate(400 560)">
+    <rect width="120" height="120" rx="28" fill="#EF4444" transform="rotate(-3 60 60)"/>
+    <text x="60" y="78" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#FFFFFF" transform="rotate(-3 60 60)">S</text>
+  </g>
+  <g transform="translate(560 540)">
+    <rect width="120" height="120" rx="28" fill="#FFFFFF" transform="rotate(6 60 60)"/>
+    <text x="60" y="78" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#0B1220" transform="rotate(6 60 60)">N</text>
+  </g>
+  <g transform="translate(180 700)">
+    <rect width="120" height="120" rx="28" fill="#3B82F6" transform="rotate(2 60 60)"/>
+    <text x="60" y="78" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#FFFFFF" transform="rotate(2 60 60)">F</text>
+  </g>
+  <g transform="translate(420 720)">
+    <rect width="120" height="120" rx="28" fill="#A855F7" transform="rotate(-5 60 60)"/>
+    <text x="60" y="78" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="56" fill="#FFFFFF" transform="rotate(-5 60 60)">A</text>
+  </g>
+
+  <!-- Bottom card with QYRO solution -->
+  <rect x="40" y="920" width="640" height="200" rx="24" fill="#FFFFFF"/>
+  <g transform="translate(72 952)">
+    <rect width="120" height="120" rx="28" fill="url(#q-grad)"/>
+    <g fill="#FFFFFF" transform="translate(28 28) scale(0.25)">
+      <path d="M128 64c35.346 0 64 28.654 64 64 0 17.06-6.68 32.554-17.566 44.024l16.92 16.92a8 8 0 1 1-11.314 11.314l-16.92-16.92C151.65 194.32 140.06 200 128 200c-39.764 0-72-32.236-72-72s32.236-64 72-64zm0 32c-22.091 0-40 17.909-40 40s17.909 40 40 40c11.046 0 21.046-4.477 28.284-11.716A39.86 39.86 0 0 0 168 136c0-22.091-17.909-40-40-40z"/>
+    </g>
+  </g>
+  <text x="220" y="998" font-family="Inter, sans-serif" font-weight="800" font-size="44" fill="#0B1220">QYRO</text>
+  <text x="220" y="1052" font-family="Inter, sans-serif" font-weight="500" font-size="26" fill="#64748B">Las sustituye todas.</text>
+  <text x="220" y="1090" font-family="Inter, sans-serif" font-weight="700" font-size="24" fill="#3B82F6">Vive mejor.</text>
+
+  <!-- Bottom CTA -->
+  <text x="360" y="1200" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="24" fill="#94A3B8">@qyro.app · Tu sistema operativo personal</text>
+</svg>

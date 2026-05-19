@@ -56,17 +56,25 @@ function PendingItem({
         type="button"
         onClick={onPick}
         className={clsx(
-          'flex w-full items-start gap-2 rounded-card-sm border p-2 text-left transition-colors',
+          'flex w-full items-stretch gap-2 rounded-card-sm border p-2 text-left transition-colors',
           active
             ? 'border-qyro-blue-500 bg-qyro-blue-500/5'
             : 'border-qyro-border-subtle hover:bg-qyro-bg-canvas',
         )}
       >
-        <div className="mt-0.5 flex flex-col gap-1">
-          {piece.variants.slice(0, 3).map((v) => (
-            <PlatformIcon key={v.id} kind={v.kind} size="sm" />
-          ))}
-        </div>
+        {piece.variants[0]?.mediaUrl ? (
+          <img
+            src={piece.variants[0].mediaUrl}
+            alt=""
+            className="h-16 w-9 shrink-0 rounded-card-sm object-cover"
+          />
+        ) : (
+          <div className="mt-0.5 flex flex-col gap-1">
+            {piece.variants.slice(0, 3).map((v) => (
+              <PlatformIcon key={v.id} kind={v.kind} size="sm" />
+            ))}
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <p className="line-clamp-2 text-xs font-medium leading-tight text-qyro-text-primary">
             {piece.title}
@@ -74,6 +82,11 @@ function PendingItem({
           <p className="mt-0.5 text-[10px] uppercase tracking-wide text-qyro-text-muted">
             {piece.format}
           </p>
+          <div className="mt-1 flex gap-1">
+            {piece.variants.slice(0, 3).map((v) => (
+              <PlatformIcon key={v.id} kind={v.kind} size="sm" />
+            ))}
+          </div>
         </div>
       </button>
     </li>

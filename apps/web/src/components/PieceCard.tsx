@@ -56,35 +56,50 @@ export function PieceCard({
           e.stopPropagation();
           onClick();
         }}
-        className="w-full text-left"
+        className="flex w-full items-stretch gap-2 text-left"
       >
-        <div className="mb-1 flex items-center gap-1">
-          {variant ? (
-            <PlatformIcon kind={variant.kind} size="sm" />
-          ) : (
-            piece.variants
-              .slice(0, 3)
-              .map((v) => <PlatformIcon key={v.id} kind={v.kind} size="sm" />)
-          )}
-          {variant?.scheduledAt && (
-            <span className="ml-1 text-[10px] tabular-nums text-qyro-text-muted">
-              {dateUtils.fmtTime(variant.scheduledAt)}
-            </span>
-          )}
-          {boostBadge && (
-            <span className="ml-auto rounded bg-qyro-purple-500/15 px-1 text-[9px] font-bold uppercase text-qyro-purple-500">
-              €
-            </span>
+        {(() => {
+          const thumb = variant?.mediaUrl ?? piece.variants[0]?.mediaUrl;
+          return thumb ? (
+            <img
+              src={thumb}
+              alt=""
+              className={clsx(
+                'shrink-0 rounded-card-sm object-cover',
+                size === 'sm' ? 'h-10 w-6' : 'h-14 w-8',
+              )}
+            />
+          ) : null;
+        })()}
+        <div className="min-w-0 flex-1">
+          <div className="mb-1 flex items-center gap-1">
+            {variant ? (
+              <PlatformIcon kind={variant.kind} size="sm" />
+            ) : (
+              piece.variants
+                .slice(0, 3)
+                .map((v) => <PlatformIcon key={v.id} kind={v.kind} size="sm" />)
+            )}
+            {variant?.scheduledAt && (
+              <span className="ml-1 text-[10px] tabular-nums text-qyro-text-muted">
+                {dateUtils.fmtTime(variant.scheduledAt)}
+              </span>
+            )}
+            {boostBadge && (
+              <span className="ml-auto rounded bg-qyro-purple-500/15 px-1 text-[9px] font-bold uppercase text-qyro-purple-500">
+                €
+              </span>
+            )}
+          </div>
+          <p className="line-clamp-2 font-medium leading-tight text-qyro-text-primary">
+            {piece.title}
+          </p>
+          {size === 'md' && (
+            <div className="mt-1.5">
+              <StatusBadge status={piece.status} size="sm" />
+            </div>
           )}
         </div>
-        <p className="line-clamp-2 font-medium leading-tight text-qyro-text-primary">
-          {piece.title}
-        </p>
-        {size === 'md' && (
-          <div className="mt-1.5">
-            <StatusBadge status={piece.status} size="sm" />
-          </div>
-        )}
       </button>
     </div>
   );
