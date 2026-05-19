@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 import { randomUUID } from 'node:crypto';
+import { mkdtemp } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { PERSONA_IDS } from './brain/personas/index.js';
 import { SocialCalendarClient } from './clients/social-calendar.js';
 import { loadConfig } from './config.js';
 import { logger } from './logger.js';
+import { ProducerRegistry } from './producers/registry.js';
 import { ModelRouter } from './router/model-router.js';
 
 /**
@@ -53,6 +57,35 @@ async function main() {
     return;
   }
 
+  if (cmd === 'produce') {
+    const format = args[0];
+    const spec = args[1];
+    if (!format || !spec) {
+      console.error('Uso: produce <format> <spec> [--ratio 9:16] [--duration 22] [--premium]');
+      process.exitCode = 2;
+      return;
+    }
+    const allowPremium = args.includes('--premium');
+    const ratioIdx = args.indexOf('--ratio');
+    const ratio = ratioIdx >= 0 ? (args[ratioIdx + 1] as '9:16' | '1:1' | '4:5' | '16:9') : undefined;
+    const durationIdx = args.indexOf('--duration');
+    const durationS = durationIdx >= 0 ? Number(args[durationIdx + 1]) : undefined;
+
+    const outputDir = await mkdtemp(path.join(tmpdir(), 'creative-studio-out-'));
+    const registry = new ProducerRegistry(cfg, {
+      dryRun: cfg.STUDIO_DRY_RUN,
+      outputDir,
+      hyperframesProjectDir: path.resolve(process.cwd(), 'hyperframes-projects/qyro-app-demos'),
+    });
+
+    const { decision, result } = await registry.routeAndProduce(
+      { format: format as Parameters<typeof registry.router.route>[0]['format'], allowPremium },
+      { spec, externalRef: randomUUID(), durationS, ratio },
+    );
+    console.log(JSON.stringify({ decision, result }, null, 2));
+    return;
+  }
+
   if (cmd === 'smoke') {
     const client = new SocialCalendarClient({
       baseUrl: cfg.SOCIAL_CALENDAR_BASE_URL,
@@ -97,13 +130,15 @@ function printHelp() {
 @qyro/creative-studio CLI
 
 Subcomandos:
-  healthcheck                Verifica que el Social Calendar responde.
-  route <format> [--premium] Pregunta al router qué modelo usar.
-                             Formatos: static_image_with_text, static_image_lifestyle,
-                             ugc_video_talking_head, ugc_video_dynamic,
-                             lifestyle_video, app_demo, concept_test
-  smoke                      Ingest dry-run de una pieza dummy.
-  help                       Esta ayuda.
+  healthcheck                          Verifica que el Social Calendar responde.
+  route <format> [--premium]           Pregunta al router qué modelo usar.
+                                       Formatos: static_image_with_text, static_image_lifestyle,
+                                       ugc_video_talking_head, ugc_video_dynamic,
+                                       lifestyle_video, app_demo, concept_test
+  produce <format> <spec> [--ratio R]  Routea + produce (respeta STUDIO_DRY_RUN).
+          [--duration N] [--premium]   Devuelve decision + result en JSON.
+  smoke                                Ingest dry-run de una pieza dummy.
+  help                                 Esta ayuda.
 `);
 }
 
