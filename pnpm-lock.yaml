@@ -41,18 +41,27 @@ importers:
       '@qyro/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@qyro/platform-adapters':
+        specifier: workspace:*
+        version: link:../../packages/platform-adapters
       '@qyro/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       argon2:
         specifier: 0.41.1
         version: 0.41.1
+      bullmq:
+        specifier: 5.34.0
+        version: 5.34.0
       fastify:
         specifier: 5.2.0
         version: 5.2.0
       fastify-plugin:
         specifier: 5.0.1
         version: 5.0.1
+      ioredis:
+        specifier: 5.4.2
+        version: 5.4.2
       jose:
         specifier: 5.9.6
         version: 5.9.6
@@ -151,6 +160,9 @@ importers:
       '@qyro/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@qyro/platform-adapters':
+        specifier: workspace:*
+        version: link:../../packages/platform-adapters
       '@qyro/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -207,6 +219,22 @@ importers:
       typescript:
         specifier: 5.7.2
         version: 5.7.2
+
+  packages/platform-adapters:
+    dependencies:
+      '@qyro/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@types/node':
+        specifier: 22.10.2
+        version: 22.10.2
+      typescript:
+        specifier: 5.7.2
+        version: 5.7.2
+      vitest:
+        specifier: 2.1.8
+        version: 2.1.8(@types/node@22.10.2)(terser@5.47.1)
 
   packages/shared:
     dependencies:

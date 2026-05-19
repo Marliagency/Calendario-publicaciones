@@ -21,7 +21,10 @@ export interface PublishJobData {
 
 export interface BoostJobData {
   contentPieceId: string;
-  audiencePresetId: string;
+  audiencePresetId?: string;
+  dailyBudgetCents: number;
+  durationDays: number;
+  objective: string;
 }
 
 export interface MetricsPullJobData {

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@qyro/db": "workspace:*",
+    "@qyro/platform-adapters": "workspace:*",
     "@qyro/shared": "workspace:*",
     "bullmq": "5.34.0",
     "ioredis": "5.4.2",

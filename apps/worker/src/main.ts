@@ -18,36 +18,24 @@ const config = loadConfig();
 async function main() {
   logger.info('🛠  Worker arrancando…');
 
+  const { handlePublishJob } = await import('./publishHandler.js');
   const publishWorker = new Worker<PublishJobData>(
     QUEUE_NAMES.publish,
-    async (job) => {
-      logger.info(
-        { jobId: job.id, platformVariantId: job.data.platformVariantId },
-        'publish job recibido (no-op, Fase 5 implementará)',
-      );
-      return { skipped: true, reason: 'phase-1.3-noop' };
-    },
+    async (job) => handlePublishJob(job.data),
     { connection: redisConnection, concurrency: config.WORKER_PUBLISH_CONCURRENCY },
   );
 
+  const { handleMetricsJob } = await import('./metricsHandler.js');
   const metricsWorker = new Worker<MetricsPullJobData>(
     QUEUE_NAMES.metricsPull,
-    async (job) => {
-      logger.info({ jobId: job.id }, 'metrics-pull job (no-op, Fase 7)');
-      return { skipped: true, reason: 'phase-1.3-noop' };
-    },
+    async (job) => handleMetricsJob(job.data),
     { connection: redisConnection, concurrency: config.WORKER_METRICS_CONCURRENCY },
   );
 
+  const { handleBoostJob } = await import('./boostHandler.js');
   const boostWorker = new Worker<BoostJobData>(
     QUEUE_NAMES.boost,
-    async (job) => {
-      logger.info(
-        { jobId: job.id, contentPieceId: job.data.contentPieceId },
-        'boost job (no-op, Fase 6)',
-      );
-      return { skipped: true, reason: 'phase-1.3-noop' };
-    },
+    async (job) => handleBoostJob(job.data),
     { connection: redisConnection, concurrency: 1 },
   );
 

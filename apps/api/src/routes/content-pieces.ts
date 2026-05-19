@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { recordStatusChange } from '../audit.js';
 import { notificationBus } from '../notifications/bus.js';
+import { schedulePublishJobsFor } from '../scheduler.js';
 
 /**
  * Endpoints CRUD/transición sobre ContentPiece — núcleo de la cola de validación
@@ -119,6 +120,10 @@ export default async function contentPiecesRoutes(app: FastifyInstance) {
       actorUserId: req.user?.sub ?? null,
       comment: 'Aprobado por revisor',
     });
+    if (nextStatus === 'SCHEDULED') {
+      const r = await schedulePublishJobsFor(id);
+      app.log.info({ contentPieceId: id, ...r }, 'jobs de publicación encolados');
+    }
     await notificationBus.emitEvent({
       kind: 'content-piece.status-changed',
       data: { contentPieceId: id, from: piece.status, to: nextStatus },

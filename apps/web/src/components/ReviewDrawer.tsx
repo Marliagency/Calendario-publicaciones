@@ -10,6 +10,7 @@ import {
 } from '../api/contentPieces.js';
 import { dateUtils } from '../lib/dates.js';
 import { PLATFORM_LABEL } from '../lib/platforms.js';
+import { BoostPanel } from './BoostPanel.js';
 import { PlatformIcon } from './PlatformIcon.js';
 import { StatusBadge } from './StatusBadge.js';
 
@@ -286,6 +287,17 @@ function DrawerContent({
           </div>
         </div>
       </section>
+
+      {/* Boost — sólo si la pieza ya está publicada */}
+      {piece.status === 'PUBLISHED' && (
+        <section className="card space-y-3 p-4">
+          <h3 className="text-sm font-semibold">Promocionar (boost)</h3>
+          <BoostPanel
+            contentPieceId={pieceId}
+            alreadyBoosted={!!piece.boostBudgetEur && Number(piece.boostBudgetEur) > 0}
+          />
+        </section>
+      )}
 
       {/* Historial */}
       {(piece.auditLogs ?? []).length > 0 && (

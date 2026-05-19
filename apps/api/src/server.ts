@@ -8,14 +8,18 @@ import { loadConfig } from './config.js';
 import { logger } from './logger.js';
 import authPlugin from './middleware/authPlugin.js';
 import authRoutes from './routes/auth.js';
+import boostRoutes from './routes/boost.js';
 import buyerPersonasRoutes from './routes/buyer-personas.js';
 import contentPiecesRoutes from './routes/content-pieces.js';
+import dashboardRoutes from './routes/dashboard.js';
+import exportRoutes from './routes/export.js';
 import healthRoutes from './routes/health.js';
 import ingestRoutes from './routes/ingest.js';
 import notificationsRoutes from './routes/notifications.js';
 import oauthRoutes from './routes/oauth.js';
 import qcRoutes from './routes/qc.js';
 import sseRoutes from './routes/sse.js';
+import webhooksRoutes from './routes/webhooks.js';
 
 export async function buildServer() {
   const config = loadConfig();
@@ -38,9 +42,13 @@ export async function buildServer() {
   await app.register(contentPiecesRoutes, { prefix: '/api/v1' });
   await app.register(qcRoutes, { prefix: '/api/v1' });
   await app.register(buyerPersonasRoutes, { prefix: '/api/v1' });
+  await app.register(boostRoutes, { prefix: '/api/v1' });
+  await app.register(dashboardRoutes, { prefix: '/api/v1' });
+  await app.register(exportRoutes, { prefix: '/api/v1' });
   await app.register(notificationsRoutes, { prefix: '/api/v1' });
   await app.register(sseRoutes, { prefix: '/sse' });
   await app.register(oauthRoutes, { prefix: '/auth' });
+  await app.register(webhooksRoutes, { prefix: '/webhooks' });
 
   app.setErrorHandler((err, _req, reply) => {
     const status = reply.statusCode >= 400 ? reply.statusCode : 500;

@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUnreadCount } from '../api/contentPieces.js';
 import { api } from '../lib/api.js';
 import { useMe } from '../lib/auth.jsx';
@@ -9,6 +9,7 @@ export function Header() {
   const { data: counts } = useUnreadCount();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const loc = useLocation();
 
   async function logout() {
     await api('/api/v1/auth/logout', { method: 'POST' });
@@ -30,6 +31,21 @@ export function Header() {
             <p className="text-[11px] text-qyro-text-muted">QYRO</p>
           </div>
         </div>
+        <nav className="hidden gap-1 sm:flex">
+          <NavLink
+            to="/calendar"
+            active={
+              loc.pathname.startsWith('/calendar') ||
+              loc.pathname === '/' ||
+              loc.pathname.startsWith('/piece')
+            }
+          >
+            Calendario
+          </NavLink>
+          <NavLink to="/dashboard" active={loc.pathname.startsWith('/dashboard')}>
+            Dashboard
+          </NavLink>
+        </nav>
         <div className="flex items-center gap-3">
           {inReview > 0 && (
             <span
@@ -46,5 +62,28 @@ export function Header() {
         </div>
       </div>
     </header>
+  );
+}
+
+function NavLink({
+  to,
+  active,
+  children,
+}: {
+  to: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      className={
+        active
+          ? 'rounded-pill bg-qyro-blue-500/10 px-3 py-1.5 text-sm font-medium text-qyro-blue-600'
+          : 'rounded-pill px-3 py-1.5 text-sm text-qyro-text-muted hover:text-qyro-text-primary'
+      }
+    >
+      {children}
+    </Link>
   );
 }

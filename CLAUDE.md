@@ -123,12 +123,13 @@ Tokens TailwindCSS (en `packages/ui/tokens.ts`):
     presets, reglas y piezas demo sin errores.
 - [x] **Fase 2**: endpoint `/api/v1/content-pieces/ingest` + validación cruzada por
   plataforma + persistencia idempotente + SSE + endpoints de notificaciones.
-- [ ] **Fase 3**: cola de validación + UI QC + checklist + sidebar pendientes.
-- [ ] **Fase 4**: calendario visual + drag&drop + PWA + atajos + auto-refresh.
-- [ ] **Fase 5**: worker de publicación + adaptadores IG/FB/TT + reintentos + webhooks.
-- [ ] **Fase 6**: boost / Spark Ads + presets audiencia + control gasto.
-- [ ] **Fase 7**: pull métricas + dashboard + Hook/Hold Score + export PDF/Excel.
-- [ ] **Fase 8**: pulido + tests E2E sandbox + documentación operativa.
+- [x] **Fase 3**: cola de validación + UI QC + checklist + sidebar pendientes.
+- [x] **Fase 4**: calendario visual + drag&drop + PWA + atajos + auto-refresh.
+- [x] **Fase 5**: worker de publicación + adaptadores IG/FB/TT (mocked) + reintentos + webhooks.
+- [x] **Fase 6**: boost / Spark Ads (mocked) + presets audiencia + kill switch reconciliado.
+- [x] **Fase 7**: pull métricas (mocked) + dashboard + Hook/Hold Score + export CSV/HTML→PDF.
+- [x] **Fase 8**: documentación operativa (docs/social-calendar/operations.md). Tests E2E sandbox
+  pendientes hasta que las apps Meta/TT estén aprobadas.
 
 **Regla del proceso**: al terminar cada fase (no sub-fase), parar y pedir aprobación.
 
