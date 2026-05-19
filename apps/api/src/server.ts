@@ -8,10 +8,13 @@ import { loadConfig } from './config.js';
 import { logger } from './logger.js';
 import authPlugin from './middleware/authPlugin.js';
 import authRoutes from './routes/auth.js';
+import buyerPersonasRoutes from './routes/buyer-personas.js';
+import contentPiecesRoutes from './routes/content-pieces.js';
 import healthRoutes from './routes/health.js';
 import ingestRoutes from './routes/ingest.js';
 import notificationsRoutes from './routes/notifications.js';
 import oauthRoutes from './routes/oauth.js';
+import qcRoutes from './routes/qc.js';
 import sseRoutes from './routes/sse.js';
 
 export async function buildServer() {
@@ -32,6 +35,9 @@ export async function buildServer() {
   await app.register(healthRoutes);
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
   await app.register(ingestRoutes, { prefix: '/api/v1' });
+  await app.register(contentPiecesRoutes, { prefix: '/api/v1' });
+  await app.register(qcRoutes, { prefix: '/api/v1' });
+  await app.register(buyerPersonasRoutes, { prefix: '/api/v1' });
   await app.register(notificationsRoutes, { prefix: '/api/v1' });
   await app.register(sseRoutes, { prefix: '/sse' });
   await app.register(oauthRoutes, { prefix: '/auth' });

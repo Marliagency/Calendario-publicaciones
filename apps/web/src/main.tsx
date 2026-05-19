@@ -19,6 +19,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <CalendarPage /> },
           { path: 'calendar', element: <CalendarPage /> },
+          { path: 'piece/:id', element: <CalendarPage /> },
         ],
       },
     ],
