@@ -7,6 +7,7 @@
 - [Añadir nueva red](add-new-platform.md) — cómo implementar un nuevo `SocialPublisher`.
 - [Extender el checklist de QC](extend-qc-checklist.md) — añadir reglas configurables.
 - [Integración con el Estudio Creativo (SESIÓN 2)](creative-studio-integration.md) — contrato HTTP que consume el estudio para empujar piezas al calendario.
+- [Discovery Fase 0 — Estudio Creativo (SESIÓN 2)](creative-studio-phase-0-discovery.md) — inventario de assets, IDs reales de personas y gap-list priorizada. **Punto de arranque** de SESIÓN 2.
 - [Decisiones arquitectónicas (ADRs)](decisions/) — registro inmutable de decisiones.
 
 ## Plan por fases
