@@ -12,8 +12,15 @@
  * Idempotente: usa upsert / connectOrCreate. Se puede re-ejecutar sin duplicados.
  */
 
+import {
+  ContentFormat,
+  ContentStatus,
+  Prisma,
+  PrismaClient,
+  QCRuleSeverity,
+  QCRuleType,
+} from '@prisma/client';
 import { hash } from 'argon2';
-import { ContentFormat, ContentStatus, PrismaClient, QCRuleSeverity, QCRuleType } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -176,7 +183,12 @@ async function seedQCRules() {
       description: 'Vídeos: comprobar que existe un gancho explícito al inicio.',
       ruleType: QCRuleType.HOOK_IN_3S,
       severity: QCRuleSeverity.BLOCKER,
-      appliesToFormats: [ContentFormat.reel, ContentFormat.ugc_video, ContentFormat.app_demo, ContentFormat.lifestyle_ad],
+      appliesToFormats: [
+        ContentFormat.reel,
+        ContentFormat.ugc_video,
+        ContentFormat.app_demo,
+        ContentFormat.lifestyle_ad,
+      ],
     },
     {
       name: 'CTA presente',
@@ -225,7 +237,12 @@ async function seedQCRules() {
       description: 'Si la pieza tiene música y va a TikTok, debe estar en la biblioteca comercial.',
       ruleType: QCRuleType.MUSIC_LICENSE,
       severity: QCRuleSeverity.BLOCKER,
-      appliesToFormats: [ContentFormat.reel, ContentFormat.ugc_video, ContentFormat.app_demo, ContentFormat.lifestyle_ad],
+      appliesToFormats: [
+        ContentFormat.reel,
+        ContentFormat.ugc_video,
+        ContentFormat.app_demo,
+        ContentFormat.lifestyle_ad,
+      ],
     },
     {
       name: 'Texto on-screen del thumbnail legible',
@@ -246,7 +263,12 @@ async function seedQCRules() {
       description: 'Comprobado automáticamente contra packages/shared/platform-limits.',
       ruleType: QCRuleType.PLATFORM_DURATION,
       severity: QCRuleSeverity.BLOCKER,
-      appliesToFormats: [ContentFormat.reel, ContentFormat.ugc_video, ContentFormat.app_demo, ContentFormat.lifestyle_ad],
+      appliesToFormats: [
+        ContentFormat.reel,
+        ContentFormat.ugc_video,
+        ContentFormat.app_demo,
+        ContentFormat.lifestyle_ad,
+      ],
     },
     {
       name: 'Ratio válido por plataforma',
@@ -275,7 +297,7 @@ async function seedQCRules() {
         severity: rule.severity,
         appliesToFormats: rule.appliesToFormats,
         appliesToPlatforms: [],
-        paramsJson: rule.paramsJson ?? {},
+        paramsJson: (rule.paramsJson ?? {}) as Prisma.InputJsonValue,
         enabled: true,
       },
     });
@@ -297,7 +319,13 @@ async function seedDemoContentPieces(campaignId: string) {
     hook: string;
     framework: string;
     variants: Array<{
-      kind: 'tiktok' | 'instagram_reel' | 'instagram_feed' | 'instagram_story' | 'facebook_feed' | 'facebook_reel';
+      kind:
+        | 'tiktok'
+        | 'instagram_reel'
+        | 'instagram_feed'
+        | 'instagram_story'
+        | 'facebook_feed'
+        | 'facebook_reel';
       mediaUrl: string;
       mediaType: 'image' | 'video';
       ratio: '1:1' | '4:5' | '9:16' | '16:9';
@@ -331,8 +359,7 @@ async function seedDemoContentPieces(campaignId: string) {
           mediaType: 'video',
           ratio: '9:16',
           durationS: 18,
-          caption:
-            'POV: 5 apps abiertas, 0 respuestas. QYRO te da un único Life Score.',
+          caption: 'POV: 5 apps abiertas, 0 respuestas. QYRO te da un único Life Score.',
           hashtags: ['#qyro', '#productividad', '#habitos', '#bienestar'],
         },
       ],
@@ -389,7 +416,8 @@ async function seedDemoContentPieces(campaignId: string) {
           mediaType: 'video',
           ratio: '9:16',
           durationS: 24,
-          caption: 'Mi Life Score: +40 puntos en 3 semanas. Sólo siguiendo lo que QYRO me decía cada mañana.',
+          caption:
+            'Mi Life Score: +40 puntos en 3 semanas. Sólo siguiendo lo que QYRO me decía cada mañana.',
           hashtags: ['#qyro', '#lifescore', '#productividad'],
         },
       ],
@@ -397,7 +425,9 @@ async function seedDemoContentPieces(campaignId: string) {
   ];
 
   for (const piece of pieces) {
-    const existing = await prisma.contentPiece.findUnique({ where: { externalRef: piece.externalRef } });
+    const existing = await prisma.contentPiece.findUnique({
+      where: { externalRef: piece.externalRef },
+    });
     if (existing) continue;
     await prisma.contentPiece.create({
       data: {

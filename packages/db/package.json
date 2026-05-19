@@ -11,7 +11,6 @@
   "scripts": {
     "build": "prisma generate",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
@@ -20,10 +19,10 @@
     "argon2": "0.41.1"
   },
   "devDependencies": {
+    "@types/node": "22.10.2",
     "prisma": "5.22.0",
     "tsx": "4.19.2",
-    "typescript": "5.7.2",
-    "vitest": "2.1.8"
+    "typescript": "5.7.2"
   },
   "prisma": {
     "schema": "prisma/schema.prisma",
