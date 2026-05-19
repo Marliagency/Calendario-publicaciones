@@ -4,8 +4,17 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { logger } from '../logger.js';
 import type { RouterDecision } from '../router/model-router.js';
-import { type BudgetCheckResult, BudgetExceededError, type HiggsfieldBudgetGuard } from './budget-guard.js';
-import { type Producer, ProducerError, type ProductionRequest, type ProductionResult } from './types.js';
+import {
+  type BudgetCheckResult,
+  BudgetExceededError,
+  type HiggsfieldBudgetGuard,
+} from './budget-guard.js';
+import {
+  type Producer,
+  ProducerError,
+  type ProductionRequest,
+  type ProductionResult,
+} from './types.js';
 
 /**
  * Productor Higgsfield. En modo real invoca `higgsfield generate --json`
@@ -16,13 +25,7 @@ import { type Producer, ProducerError, type ProductionRequest, type ProductionRe
  *   gpt_image_2, nano_banana_2, seedance_2_0, veo_3_1, soul_v2.
  */
 
-const VIDEO_MODELS = new Set([
-  'seedance_2_0',
-  'veo_3_1',
-  'sora_2',
-  'kling_3_0_premium',
-  'soul_v2',
-]);
+const VIDEO_MODELS = new Set(['seedance_2_0', 'veo_3_1', 'sora_2', 'kling_3_0_premium', 'soul_v2']);
 
 export interface HiggsfieldRunner {
   /** Invoca el CLI de Higgsfield y devuelve el JSON parseado. */
@@ -63,10 +66,7 @@ export class HiggsfieldCliRunner implements HiggsfieldRunner {
         clearTimeout(timer);
         if (code !== 0) {
           reject(
-            new ProducerError(
-              `higgsfield CLI exit ${code}: ${stderr.slice(0, 500)}`,
-              'higgsfield',
-            ),
+            new ProducerError(`higgsfield CLI exit ${code}: ${stderr.slice(0, 500)}`, 'higgsfield'),
           );
           return;
         }

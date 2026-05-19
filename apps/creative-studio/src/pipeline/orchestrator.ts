@@ -2,16 +2,13 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import type { IngestPayload, PlatformVariantKind, Ratio } from '@qyro/shared';
 import type { PersonaId } from '../brain/personas/index.js';
-import type {
-  IngestResult,
-  SocialCalendarClient,
-} from '../clients/social-calendar.js';
+import type { IngestResult, SocialCalendarClient } from '../clients/social-calendar.js';
 import { logger } from '../logger.js';
 import type { ProducerRegistry } from '../producers/registry.js';
 import type { CreativeFormat } from '../router/model-router.js';
-import { BrandingOverlay } from './overlay.js';
+import type { BrandingOverlay } from './overlay.js';
 import type { Storage } from './storage.js';
-import { buildPlatformVariants, type PlatformCopy } from './variants.js';
+import { type PlatformCopy, buildPlatformVariants } from './variants.js';
 
 /**
  * Orquestador del pipeline brief → ingest. Cierra el bucle:
@@ -71,7 +68,10 @@ export interface CreativeRun {
   };
   overlay: { applied: boolean; dryRun: boolean };
   storage: { url: string };
-  variants: { built: PlatformVariantKind[]; skipped: Array<{ kind: PlatformVariantKind; reason: string }> };
+  variants: {
+    built: PlatformVariantKind[];
+    skipped: Array<{ kind: PlatformVariantKind; reason: string }>;
+  };
   ingest: IngestResult;
   startedAt: string;
   finishedAt: string;

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 160" role="img" aria-label="QYRO wordmark white">
+  <title>QYRO</title>
+  <style>
+    .qyro-wm { font-family: Inter, -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-weight: 800; letter-spacing: 0.04em; }
+  </style>
+  <text x="0" y="118" class="qyro-wm" fill="#FFFFFF" font-size="128">QYRO</text>
+</svg>

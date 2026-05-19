@@ -3,7 +3,12 @@ import { ModelRouter, type RouterDecision, type RouterInput } from '../router/mo
 import { HiggsfieldBudgetGuard } from './budget-guard.js';
 import { HiggsfieldProducer } from './higgsfield.js';
 import { HyperFramesProducer } from './hyperframes.js';
-import { type Producer, ProducerError, type ProductionRequest, type ProductionResult } from './types.js';
+import {
+  type Producer,
+  ProducerError,
+  type ProductionRequest,
+  type ProductionResult,
+} from './types.js';
 
 /**
  * Registro de productores: une router + budget guard + producers y
@@ -45,10 +50,7 @@ export class ProducerRegistry {
   pickProducer(decision: RouterDecision): Producer {
     const p = this.producers.find((x) => x.canHandle(decision));
     if (!p) {
-      throw new ProducerError(
-        `Ningún productor maneja tool=${decision.tool}`,
-        'registry',
-      );
+      throw new ProducerError(`Ningún productor maneja tool=${decision.tool}`, 'registry');
     }
     return p;
   }

@@ -70,7 +70,8 @@ async function main() {
     }
     const allowPremium = args.includes('--premium');
     const ratioIdx = args.indexOf('--ratio');
-    const ratio = ratioIdx >= 0 ? (args[ratioIdx + 1] as '9:16' | '1:1' | '4:5' | '16:9') : undefined;
+    const ratio =
+      ratioIdx >= 0 ? (args[ratioIdx + 1] as '9:16' | '1:1' | '4:5' | '16:9') : undefined;
     const durationIdx = args.indexOf('--duration');
     const durationS = durationIdx >= 0 ? Number(args[durationIdx + 1]) : undefined;
 

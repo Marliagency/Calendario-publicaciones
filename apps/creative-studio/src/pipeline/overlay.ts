@@ -17,16 +17,19 @@ import { logger } from '../logger.js';
  * verificar el contrato sin ffmpeg ni los assets oficiales.
  */
 
-export type PlatformOverlayPosition =
-  | 'bottom-right-default'
-  | 'tiktok-raised'
-  | 'reel-raised';
+export type PlatformOverlayPosition = 'bottom-right-default' | 'tiktok-raised' | 'reel-raised';
 
 export interface OverlayRequest {
   inputPath: string;
   outputPath: string;
   /** Plataforma de destino para ajustar safe zone. */
-  platform: 'tiktok' | 'instagram_reel' | 'instagram_feed' | 'instagram_story' | 'facebook_feed' | 'facebook_reel';
+  platform:
+    | 'tiktok'
+    | 'instagram_reel'
+    | 'instagram_feed'
+    | 'instagram_story'
+    | 'facebook_feed'
+    | 'facebook_reel';
   dryRun: boolean;
 }
 

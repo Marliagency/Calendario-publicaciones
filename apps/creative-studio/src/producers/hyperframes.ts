@@ -3,7 +3,12 @@ import { access, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { logger } from '../logger.js';
 import type { RouterDecision } from '../router/model-router.js';
-import { type Producer, ProducerError, type ProductionRequest, type ProductionResult } from './types.js';
+import {
+  type Producer,
+  ProducerError,
+  type ProductionRequest,
+  type ProductionResult,
+} from './types.js';
 
 /**
  * Productor HyperFrames: renderiza vídeo HTML→MP4 local con coste 0.

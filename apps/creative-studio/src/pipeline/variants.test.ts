@@ -13,9 +13,7 @@ describe('buildPlatformVariants', () => {
     });
 
     expect(r.built.map((b) => b.kind)).toEqual(['tiktok', 'instagram_reel']);
-    expect(r.skipped.map((s) => s.kind).sort()).toEqual(
-      ['facebook_feed', 'instagram_feed'].sort(),
-    );
+    expect(r.skipped.map((s) => s.kind).sort()).toEqual(['facebook_feed', 'instagram_feed'].sort());
     expect(r.built[0]?.caption).toBe('POV TT');
     expect(r.built[1]?.caption).toBe('POV'); // fallback
   });

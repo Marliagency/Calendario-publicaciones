@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" role="img" aria-label="QYRO watermark cover">
+  <title>QYRO</title>
+  <defs>
+    <linearGradient id="qyro-wmc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2C7BFF"/>
+      <stop offset="50%" stop-color="#5AC8FA"/>
+      <stop offset="100%" stop-color="#7B61FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Chip blanco con shadow suave, esquinas redondeadas QYRO -->
+  <rect x="4" y="4" width="232" height="72" rx="20" fill="#FFFFFF"/>
+  <!-- Isotipo Q en degradado, alineado a la izquierda -->
+  <g transform="translate(18, 22)">
+    <rect x="0" y="0" width="36" height="36" rx="10" fill="url(#qyro-wmc-grad)"/>
+    <g fill="#FFFFFF" transform="translate(8, 8) scale(0.078125)">
+      <path d="M128 64c35.346 0 64 28.654 64 64 0 17.06-6.68 32.554-17.566 44.024l16.92 16.92a8 8 0 1 1-11.314 11.314l-16.92-16.92C151.65 194.32 140.06 200 128 200c-39.764 0-72-32.236-72-72s32.236-64 72-64zm0 32c-22.091 0-40 17.909-40 40s17.909 40 40 40c11.046 0 21.046-4.477 28.284-11.716A39.86 39.86 0 0 0 168 136c0-22.091-17.909-40-40-40z"/>
+    </g>
+  </g>
+  <!-- Wordmark a la derecha del isotipo -->
+  <text x="68" y="51" font-family="Inter, -apple-system, system-ui, sans-serif" font-weight="800" font-size="28" fill="#0B1220" letter-spacing="2">QYRO</text>
+</svg>
