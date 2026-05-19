@@ -6,6 +6,7 @@
 - [Conectar nueva cuenta social](connect-new-account.md) — OAuth con Meta/TikTok paso a paso.
 - [Añadir nueva red](add-new-platform.md) — cómo implementar un nuevo `SocialPublisher`.
 - [Extender el checklist de QC](extend-qc-checklist.md) — añadir reglas configurables.
+- [Integración con el Estudio Creativo (SESIÓN 2)](creative-studio-integration.md) — contrato HTTP que consume el estudio para empujar piezas al calendario.
 - [Decisiones arquitectónicas (ADRs)](decisions/) — registro inmutable de decisiones.
 
 ## Plan por fases
