@@ -20,7 +20,7 @@
     "db:generate": "pnpm --filter @qyro/db exec prisma generate",
     "db:migrate": "pnpm --filter @qyro/db exec prisma migrate dev",
     "db:reset": "pnpm --filter @qyro/db exec prisma migrate reset",
-    "db:seed": "pnpm --filter @qyro/db exec tsx prisma/seed.ts",
+    "db:seed": "pnpm --filter @qyro/db exec tsx --env-file ../../.env prisma/seed.ts",
     "db:studio": "pnpm --filter @qyro/db exec prisma studio",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down",
