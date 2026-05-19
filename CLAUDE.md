@@ -111,13 +111,16 @@ Tokens TailwindCSS (en `packages/ui/tokens.ts`):
 ## 8. Plan por fases (estado actual)
 
 - [x] **Fase 0**: discovery + decisiones de arquitectura.
-- [ ] **Fase 1**: scaffolding + Prisma + seed + auth + OAuth mock.
-  - [x] 1.0 — Foundation (este commit): monorepo, docker-compose, docs, CI.
-  - [ ] 1.1 — Prisma schema completo + seed BuyerPersonas + Campaign demo.
-  - [ ] 1.2 — apps/api con Fastify + auth JWT.
-  - [ ] 1.3 — apps/worker con BullMQ.
-  - [ ] 1.4 — apps/web PWA + UI tokens.
-  - [ ] 1.5 — OAuth scaffolding Meta/TT (mocked).
+- [x] **Fase 1**: scaffolding + Prisma + seed + auth + OAuth mock.
+  - [x] 1.0 — Foundation: monorepo, docker-compose, docs, CI.
+  - [x] 1.1 — Prisma schema completo + seed BuyerPersonas + Campaign demo.
+  - [x] 1.2 — apps/api con Fastify + auth JWT + ingest stub.
+  - [x] 1.3 — apps/worker con BullMQ (3 colas no-op).
+  - [x] 1.4 — apps/web PWA + UI tokens QYRO + login + calendar placeholder.
+  - [x] 1.5 — OAuth scaffolding Meta/TT (501 hasta app review).
+  - **Validación end-to-end pendiente**: levantar docker (`pnpm infra:up`) y correr
+    `pnpm db:migrate && pnpm db:seed` para verificar que el seed crea las personas,
+    presets, reglas y piezas demo sin errores.
 - [ ] **Fase 2**: endpoint `/api/v1/content-pieces/ingest` + validación + notificaciones.
 - [ ] **Fase 3**: cola de validación + UI QC + checklist + sidebar pendientes.
 - [ ] **Fase 4**: calendario visual + drag&drop + PWA + atajos + auto-refresh.
