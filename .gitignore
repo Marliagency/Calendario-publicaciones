@@ -1,0 +1,45 @@
+# deps
+node_modules
+.pnpm-store
+
+# build outputs
+dist
+build
+.turbo
+*.tsbuildinfo
+
+# env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# coverage / test
+coverage
+.nyc_output
+playwright-report
+test-results
+
+# vite / pwa
+apps/web/dev-dist
+apps/web/sw.js
+apps/web/workbox-*.js
+
+# prisma generated client
+packages/db/generated
+
+# os / editor
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# misc
+*.local
