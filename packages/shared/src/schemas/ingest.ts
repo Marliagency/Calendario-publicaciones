@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { PLATFORM_VARIANT_KINDS } from '../platforms.js';
 
 const ratioSchema = z.enum(['1:1', '4:5', '9:16', '16:9']);
 
@@ -13,21 +12,26 @@ const platformVariantPayloadSchema = z.object({
   music_ref: z.string().nullable().optional(),
 });
 
-export const platformVariantsPayloadSchema = z.object(
-  Object.fromEntries(
-    PLATFORM_VARIANT_KINDS.map((k) => [k, platformVariantPayloadSchema.optional()]),
-  ) as Record<(typeof PLATFORM_VARIANT_KINDS)[number], typeof platformVariantPayloadSchema.optional>,
-);
+export const platformVariantsPayloadSchema = z.object({
+  tiktok: platformVariantPayloadSchema.optional(),
+  instagram_reel: platformVariantPayloadSchema.optional(),
+  instagram_feed: platformVariantPayloadSchema.optional(),
+  instagram_story: platformVariantPayloadSchema.optional(),
+  facebook_feed: platformVariantPayloadSchema.optional(),
+  facebook_reel: platformVariantPayloadSchema.optional(),
+});
 
-const suggestedScheduleSchema = z
-  .object(
-    Object.fromEntries(
-      PLATFORM_VARIANT_KINDS.map((k) => [k, z.string().datetime({ offset: true }).optional()]),
-    ) as Record<
-      (typeof PLATFORM_VARIANT_KINDS)[number],
-      ReturnType<typeof z.string>
-    >,
-  )
+const isoDateString = z.string().datetime({ offset: true });
+
+export const suggestedScheduleSchema = z
+  .object({
+    tiktok: isoDateString.optional(),
+    instagram_reel: isoDateString.optional(),
+    instagram_feed: isoDateString.optional(),
+    instagram_story: isoDateString.optional(),
+    facebook_feed: isoDateString.optional(),
+    facebook_reel: isoDateString.optional(),
+  })
   .partial();
 
 export const ingestPayloadSchema = z.object({
@@ -45,3 +49,4 @@ export const ingestPayloadSchema = z.object({
 });
 
 export type IngestPayload = z.infer<typeof ingestPayloadSchema>;
+export type PlatformVariantPayload = z.infer<typeof platformVariantPayloadSchema>;
