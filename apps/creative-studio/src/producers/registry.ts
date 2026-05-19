@@ -1,7 +1,9 @@
 import type { Config } from '../config.js';
+import { logger } from '../logger.js';
 import { ModelRouter, type RouterDecision, type RouterInput } from '../router/model-router.js';
 import { HiggsfieldBudgetGuard } from './budget-guard.js';
-import { HiggsfieldProducer } from './higgsfield.js';
+import { HiggsfieldHttpRunner } from './higgsfield-http.js';
+import { HiggsfieldCliRunner, HiggsfieldProducer, type HiggsfieldRunner } from './higgsfield.js';
 import { HyperFramesProducer } from './hyperframes.js';
 import {
   type Producer,
@@ -40,8 +42,9 @@ export class ProducerRegistry {
   ) {
     this.router = new ModelRouter(cfg);
     this.budgetGuard = opts.budgetGuard ?? new HiggsfieldBudgetGuard(cfg);
+    const higgsfieldRunner = buildHiggsfieldRunner(cfg);
     this.producers = [
-      new HiggsfieldProducer(this.budgetGuard),
+      new HiggsfieldProducer(this.budgetGuard, higgsfieldRunner),
       new HyperFramesProducer(opts.hyperframesProjectDir),
     ];
   }
@@ -58,6 +61,7 @@ export class ProducerRegistry {
   /**
    * Routea + produce en un paso. Esta es la API que usa el pipeline.
    */
+  // (continúa abajo)
   async routeAndProduce(
     input: RouterInput,
     req: Omit<ProductionRequest, 'decision' | 'dryRun' | 'outputDir'>,
@@ -72,4 +76,24 @@ export class ProducerRegistry {
     });
     return { decision, result };
   }
+}
+
+/**
+ * Elige el runner Higgsfield según las credenciales presentes:
+ *   - Si HIGGSFIELD_API_ID + HIGGSFIELD_API_SECRET → HTTP runner (no requiere CLI local).
+ *   - Si no → CLI runner (asume `higgsfield` en PATH).
+ *
+ * El producer lo recibe inyectado; dry-run lo ignora.
+ */
+function buildHiggsfieldRunner(cfg: Config): HiggsfieldRunner {
+  if (cfg.HIGGSFIELD_API_ID && cfg.HIGGSFIELD_API_SECRET) {
+    logger.info({ baseUrl: cfg.HIGGSFIELD_API_BASE_URL }, 'higgsfield: usando HTTP runner');
+    return new HiggsfieldHttpRunner({
+      baseUrl: cfg.HIGGSFIELD_API_BASE_URL,
+      apiId: cfg.HIGGSFIELD_API_ID,
+      apiSecret: cfg.HIGGSFIELD_API_SECRET,
+    });
+  }
+  logger.info('higgsfield: usando CLI runner (asume binario `higgsfield` en PATH)');
+  return new HiggsfieldCliRunner();
 }

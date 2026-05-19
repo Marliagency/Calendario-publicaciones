@@ -15,6 +15,11 @@ const ConfigSchema = z.object({
     .transform((v) => v === 'true'),
 
   HIGGSFIELD_API_KEY: z.string().optional(),
+  /** ID + Secret pair (formato actual de la API HTTP de Higgsfield). */
+  HIGGSFIELD_API_ID: z.string().uuid().optional(),
+  HIGGSFIELD_API_SECRET: z.string().min(32).optional(),
+  /** Base URL del API HTTP de Higgsfield. Override para tests/sandbox. */
+  HIGGSFIELD_API_BASE_URL: z.string().url().default('https://platform.higgsfield.ai'),
   HIGGSFIELD_MONTHLY_CREDIT_BUDGET: z.coerce.number().int().positive().default(2000),
   HIGGSFIELD_SOFT_WARN_AT_PCT: z.coerce.number().int().min(0).max(100).default(70),
   HIGGSFIELD_HARD_BLOCK_AT_PCT: z.coerce.number().int().min(0).max(100).default(95),
