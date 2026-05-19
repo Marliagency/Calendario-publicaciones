@@ -5,7 +5,7 @@
   "description": "Módulo de calendario social para QYRO: QC, scheduling, publicación a IG/FB/TikTok, boost y analítica.",
   "packageManager": "pnpm@9.15.9",
   "engines": {
-    "node": ">=22.0.0",
+    "node": ">=18.0.0",
     "pnpm": ">=9.0.0"
   },
   "scripts": {
