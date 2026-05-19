@@ -7,6 +7,9 @@ import { PERSONA_IDS } from './brain/personas/index.js';
 import { SocialCalendarClient } from './clients/social-calendar.js';
 import { loadConfig } from './config.js';
 import { logger } from './logger.js';
+import { PipelineOrchestrator } from './pipeline/orchestrator.js';
+import { BrandingOverlay } from './pipeline/overlay.js';
+import { FakeHttpsStorage } from './pipeline/storage.js';
 import { ProducerRegistry } from './producers/registry.js';
 import { ModelRouter } from './router/model-router.js';
 
@@ -86,6 +89,51 @@ async function main() {
     return;
   }
 
+  if (cmd === 'pipeline') {
+    const format = args[0];
+    if (!format) {
+      console.error('Uso: pipeline <format> — ejemplo demo POV optimizador');
+      process.exitCode = 2;
+      return;
+    }
+    const outputDir = await mkdtemp(path.join(tmpdir(), 'creative-studio-pipe-'));
+    const registry = new ProducerRegistry(cfg, {
+      dryRun: cfg.STUDIO_DRY_RUN,
+      outputDir,
+      hyperframesProjectDir: path.resolve(process.cwd(), 'hyperframes-projects/qyro-app-demos'),
+    });
+    const client = new SocialCalendarClient({
+      baseUrl: cfg.SOCIAL_CALENDAR_BASE_URL,
+      serviceApiKey: cfg.SOCIAL_CALENDAR_SERVICE_API_KEY,
+      timeoutMs: cfg.SOCIAL_CALENDAR_TIMEOUT_S * 1000,
+      maxRetries: cfg.SOCIAL_CALENDAR_MAX_RETRIES,
+    });
+    const orchestrator = new PipelineOrchestrator({
+      registry,
+      storage: new FakeHttpsStorage('https://cdn.qyro.test/'),
+      overlay: new BrandingOverlay(),
+      client,
+      overlayWorkDir: path.join(outputDir, 'overlay'),
+      dryRun: cfg.STUDIO_DRY_RUN,
+    });
+    const run = await orchestrator.run({
+      format: format as Parameters<typeof registry.router.route>[0]['format'],
+      spec: 'POV: 5 apps de salud abiertas y ninguna te dice si vas bien',
+      title: 'CLI pipeline demo',
+      buyerPersonaIds: [PERSONA_IDS.OPTIMIZADOR_CONSCIENTE],
+      targetPlatforms: ['tiktok', 'instagram_reel'],
+      copyByPlatform: {
+        tiktok: { caption: 'POV: 5 apps abiertas...', hashtags: ['qyro', 'productividad'] },
+      },
+      fallbackCopy: { caption: 'POV demo', hashtags: ['qyro'] },
+      ratio: '9:16',
+      durationS: 22,
+    });
+    console.log(JSON.stringify(run, null, 2));
+    process.exitCode = run.ingest.outcome === 'rejected' ? 1 : 0;
+    return;
+  }
+
   if (cmd === 'smoke') {
     const client = new SocialCalendarClient({
       baseUrl: cfg.SOCIAL_CALENDAR_BASE_URL,
@@ -137,6 +185,8 @@ Subcomandos:
                                        lifestyle_video, app_demo, concept_test
   produce <format> <spec> [--ratio R]  Routea + produce (respeta STUDIO_DRY_RUN).
           [--duration N] [--premium]   Devuelve decision + result en JSON.
+  pipeline <format>                    Pipeline completo: route → produce → overlay →
+                                       storage → variants → ingest. Devuelve CreativeRun.
   smoke                                Ingest dry-run de una pieza dummy.
   help                                 Esta ayuda.
 `);
