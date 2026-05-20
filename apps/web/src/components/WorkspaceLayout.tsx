@@ -1,14 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useParams } from 'react-router-dom';
 import { useWorkspaces } from '../lib/workspace.js';
 import { setActiveWorkspaceSlug, WorkspaceProvider, LAST_WORKSPACE_KEY } from '../lib/workspace.js';
+import { CommandPalette } from './CommandPalette.js';
 import { Header } from './Header.js';
 
 export function WorkspaceLayout() {
   const { slug = '' } = useParams<{ slug: string }>();
   const { data, isLoading } = useWorkspaces();
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
-  // Keep module-level slug in sync for api() calls.
   useEffect(() => {
     if (slug) {
       setActiveWorkspaceSlug(slug);
@@ -16,6 +17,17 @@ export function WorkspaceLayout() {
     }
     return () => setActiveWorkspaceSlug('');
   }, [slug]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   if (isLoading) {
     return (
@@ -28,7 +40,6 @@ export function WorkspaceLayout() {
   const workspace = data?.items.find((w) => w.slug === slug);
 
   if (!workspace) {
-    // Workspace not found or user has no access.
     const fallback = data?.items[0]?.slug;
     return <Navigate to={fallback ? `/w/${fallback}/calendar` : '/workspaces/new'} replace />;
   }
@@ -36,13 +47,13 @@ export function WorkspaceLayout() {
   return (
     <WorkspaceProvider slug={slug} workspace={workspace}>
       <div className="min-h-screen bg-qyro-bg-canvas">
-        {/* Thin brand color stripe at very top */}
         <div
           className="h-0.5 w-full"
           style={{ background: workspace.brandColorPrimary }}
         />
-        <Header />
+        <Header onOpenPalette={() => setPaletteOpen(true)} />
         <Outlet />
+        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       </div>
     </WorkspaceProvider>
   );

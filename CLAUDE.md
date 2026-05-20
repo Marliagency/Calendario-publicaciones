@@ -130,6 +130,17 @@ Tokens TailwindCSS (en `packages/ui/tokens.ts`):
 - [x] **Fase 7**: pull métricas (mocked) + dashboard + Hook/Hold Score + export CSV/HTML→PDF.
 - [x] **Fase 8**: documentación operativa (docs/social-calendar/operations.md). Tests E2E sandbox
   pendientes hasta que las apps Meta/TT estén aprobadas.
+- [x] **Iteración 3** (multi-workspace):
+  - [x] Modelos Workspace, WorkspaceMember, WorkspaceApiKey + migración SQL + seed.
+  - [x] Todas las rutas API aisladas por workspaceId; WorkspaceApiKey reemplaza INGEST_SERVICE_API_KEY.
+  - [x] Kill switch por workspace (caps desde Workspace.dailyBoostCapEur/monthlyBoostCapEur).
+  - [x] Frontend: rutas /w/:slug/*, WorkspaceLayout, WorkspaceSwitcher, WorkspaceRedirectPage.
+  - [x] Wizard 3 pasos para crear workspaces.
+  - [x] ⌘K Command Palette (buscar piezas, navegar, cambiar workspace).
+  - [x] PendingSidebar con búsqueda inline y "ver más".
+  - [x] Página de ajustes del workspace con gestión de API keys.
+  - [x] SSE filtra eventos por workspaceId.
+  - [x] mockApi actualizado para desarrollo offline.
 
 **Regla del proceso**: al terminar cada fase (no sub-fase), parar y pedir aprobación.
 

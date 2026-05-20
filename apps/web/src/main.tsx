@@ -17,6 +17,7 @@ import { DashboardPage } from './pages/DashboardPage.js';
 import { LoginPage } from './pages/LoginPage.js';
 import { WorkspaceRedirectPage } from './pages/WorkspaceRedirectPage.js';
 import { CreateWorkspacePage } from './pages/workspace/CreateWorkspacePage.js';
+import { WorkspaceSettingsPage } from './pages/workspace/WorkspaceSettingsPage.js';
 
 function ErrorPage() {
   const error = useRouteError();
@@ -64,6 +65,7 @@ const router = createBrowserRouter([
               { path: 'calendar', element: <CalendarPage /> },
               { path: 'piece/:id', element: <CalendarPage /> },
               { path: 'dashboard', element: <DashboardPage /> },
+              { path: 'settings', element: <WorkspaceSettingsPage /> },
             ],
           },
         ],

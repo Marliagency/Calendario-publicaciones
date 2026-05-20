@@ -57,18 +57,22 @@ export function useContentPieces(
     platform?: PlatformKind[];
     fromDate?: string;
     toDate?: string;
+    limit?: number;
   } = {},
+  opts: { enabled?: boolean } = {},
 ) {
   const params = new URLSearchParams();
   if (filters.status?.length) params.set('status', filters.status.join(','));
   if (filters.platform?.length) params.set('platform', filters.platform.join(','));
   if (filters.fromDate) params.set('fromDate', filters.fromDate);
   if (filters.toDate) params.set('toDate', filters.toDate);
+  if (filters.limit) params.set('limit', String(filters.limit));
 
   return useQuery({
     queryKey: ['content-pieces', filters],
     queryFn: () => api<{ items: ContentPiece[] }>(`/api/v1/content-pieces?${params}`),
     refetchOnWindowFocus: true,
+    enabled: opts.enabled ?? true,
   });
 }
 

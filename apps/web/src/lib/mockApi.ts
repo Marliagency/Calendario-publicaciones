@@ -217,10 +217,11 @@ export function tryMockApi<T>(path: string, init: RequestInit): T | undefined {
   if (p === '/api/v1/auth/me' && method === 'GET') return mockMe as T;
   if (p === '/api/v1/workspaces' && method === 'GET') return mockWorkspaces as T;
   const wsDetailMatch = p.match(/^\/api\/v1\/workspaces\/([^/]+)$/);
-  if (wsDetailMatch && method === 'GET') {
+  if (wsDetailMatch && !p.includes('/api-keys') && method === 'GET') {
     const ws = mockWorkspaces.items.find((w) => w.slug === wsDetailMatch[1]);
     if (ws) return { workspace: { ...ws, defaultTimezone: 'Europe/Madrid', defaultLanguage: 'es-ES', dailyBoostCapEur: 5, monthlyBoostCapEur: 150, members: [] }, role: ws.role } as T;
   }
+  if (p.includes('/api-keys') && method === 'GET') return { keys: [] } as T;
   if (p === '/api/v1/notifications/unread-count') return mockUnreadCount as T;
   if (p === '/api/v1/dashboard') return mockDashboard as T;
   if (p === '/api/v1/audience-presets') return { items: mockAudiencePresets.items } as T;
