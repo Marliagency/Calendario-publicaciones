@@ -6,29 +6,19 @@ const log = logger.child({ component: 'boostHandler' });
 
 export interface BoostJobInput {
   contentPieceId: string;
+  workspaceId: string;
   audiencePresetId?: string;
   dailyBudgetCents: number;
   durationDays: number;
   objective: string;
 }
 
-/**
- * Handler de job de boost. Por ahora MOCK: simula creación de campaña en Meta
- * Marketing API / TikTok Marketing API (Spark Ads). Cuando haya app review,
- * sustituir las llamadas mock por las APIs reales.
- *
- * Pasos:
- *   1. Busca la pieza y su primera variante publicada.
- *   2. Si no está publicada todavía, falla → BullMQ reintenta.
- *   3. Crea registro AdCampaign con status ACTIVE.
- *   4. Devuelve. La reconciliación de spend real la hace el job de métricas (Fase 7).
- */
 export async function handleBoostJob(input: BoostJobInput): Promise<{ ok: boolean }> {
   const piece = await prisma.contentPiece.findUnique({
     where: { id: input.contentPieceId },
     include: { variants: true },
   });
-  if (!piece) return { ok: false };
+  if (!piece || piece.workspaceId !== input.workspaceId) return { ok: false };
 
   const publishedVariant = piece.variants.find((v) => v.publishedAt && v.platformPostId);
   if (!publishedVariant) {
@@ -40,7 +30,6 @@ export async function handleBoostJob(input: BoostJobInput): Promise<{ ok: boolea
 
   const platform = VARIANT_TO_PLATFORM[publishedVariant.kind];
 
-  // MOCK: simulamos campaign_id devuelto por Meta/TT Marketing API.
   const mockCampaignId = `${platform}_camp_${Date.now()}`;
   const mockAdsetId = `${platform}_adset_${Date.now()}`;
   const mockAdId = `${platform}_ad_${Date.now()}`;
@@ -49,6 +38,7 @@ export async function handleBoostJob(input: BoostJobInput): Promise<{ ok: boolea
 
   await prisma.adCampaign.create({
     data: {
+      workspaceId: input.workspaceId,
       platformVariantId: publishedVariant.id,
       platform,
       externalCampaignId: mockCampaignId,
@@ -66,6 +56,7 @@ export async function handleBoostJob(input: BoostJobInput): Promise<{ ok: boolea
   log.info(
     {
       contentPieceId: input.contentPieceId,
+      workspaceId: input.workspaceId,
       platform,
       mockCampaignId,
       lifetimeCents,

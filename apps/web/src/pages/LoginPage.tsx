@@ -22,7 +22,7 @@ export function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
       await qc.invalidateQueries({ queryKey: ['me'] });
-      navigate('/calendar', { replace: true });
+      navigate('/', { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? 'Credenciales incorrectas' : 'Error de red');
     } finally {

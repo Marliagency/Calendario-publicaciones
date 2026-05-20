@@ -91,6 +91,7 @@ model Workspace {
   audiencePresets           AudiencePreset[]
   spendLedger               BoostSpendLedger[]
   notificationDeliveries    NotificationDelivery[]
+  adCampaigns               AdCampaign[]
 }
 
 model WorkspaceMember {
@@ -376,6 +377,8 @@ enum AdCampaignStatus {
 
 model AdCampaign {
   id                  String           @id @default(cuid())
+  workspaceId         String
+  workspace           Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   platformVariantId   String
   platformVariant     PlatformVariant  @relation(fields: [platformVariantId], references: [id], onDelete: Cascade)
   platform            Platform
@@ -393,6 +396,7 @@ model AdCampaign {
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 
+  @@index([workspaceId])
   @@index([status])
   @@index([startedAt])
 }
