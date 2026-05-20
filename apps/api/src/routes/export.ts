@@ -2,16 +2,8 @@ import { prisma } from '@qyro/db';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 
-/**
- * Export endpoints (Fase 7):
- *   - GET /export/monthly-report.csv?month=YYYY-MM  → CSV con totales por pieza
- *   - GET /export/monthly-report.html?month=YYYY-MM → HTML imprimible (printer → PDF)
- *
- * Nota: el brief mencionaba PDF + Excel via skills `pdf` y `xlsx` (no disponibles
- * en este entorno, ADR 0001). Elegimos CSV (compatible con Excel) + HTML imprimible
- * que el navegador convierte a PDF con Ctrl+P. Funcionalmente equivalente sin deps.
- */
 export default async function exportRoutes(app: FastifyInstance) {
+  const wm = app.requireWorkspaceMember();
   const querySchema = z.object({
     month: z
       .string()
@@ -19,11 +11,12 @@ export default async function exportRoutes(app: FastifyInstance) {
       .optional(),
   });
 
-  app.get('/export/monthly-report.csv', { preHandler: [app.requireUser] }, async (req, reply) => {
+  app.get('/export/monthly-report.csv', { preHandler: [app.requireUser, wm] }, async (req, reply) => {
     const { month } = querySchema.parse(req.query);
     const { from, to, label } = monthRange(month);
+    const workspaceId = req.workspace!.id;
 
-    const variants = await fetchMonthlyData(from, to);
+    const variants = await fetchMonthlyData(from, to, workspaceId);
 
     const rows = [
       [
@@ -67,10 +60,11 @@ export default async function exportRoutes(app: FastifyInstance) {
     return rows.map((r) => r.join(',')).join('\n');
   });
 
-  app.get('/export/monthly-report.html', { preHandler: [app.requireUser] }, async (req, reply) => {
+  app.get('/export/monthly-report.html', { preHandler: [app.requireUser, wm] }, async (req, reply) => {
     const { month } = querySchema.parse(req.query);
     const { from, to, label } = monthRange(month);
-    const variants = await fetchMonthlyData(from, to);
+    const workspaceId = req.workspace!.id;
+    const variants = await fetchMonthlyData(from, to, workspaceId);
 
     const tableRows = variants
       .map((v) => {
@@ -128,9 +122,12 @@ function monthRange(month: string | undefined) {
   return { from, to, label };
 }
 
-async function fetchMonthlyData(from: Date, to: Date) {
+async function fetchMonthlyData(from: Date, to: Date, workspaceId: string) {
   return prisma.platformVariant.findMany({
-    where: { publishedAt: { gte: from, lt: to } },
+    where: {
+      publishedAt: { gte: from, lt: to },
+      contentPiece: { workspaceId },
+    },
     include: {
       contentPiece: { select: { title: true } },
       metrics: { orderBy: { fetchedAt: 'desc' } },

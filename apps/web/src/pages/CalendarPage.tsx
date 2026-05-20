@@ -2,7 +2,6 @@ import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } f
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApprove, useContentPieces, useReject, useReschedule } from '../api/contentPieces.js';
-import { Header } from '../components/Header.js';
 import { PendingSidebar } from '../components/PendingSidebar.js';
 import { ReviewDrawer } from '../components/ReviewDrawer.js';
 import { CalendarToolbar, type CalendarView } from '../components/calendar/CalendarToolbar.js';
@@ -12,6 +11,7 @@ import { WeekView } from '../components/calendar/WeekView.js';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts.js';
 import { useSSE } from '../hooks/useSSE.js';
 import { dateUtils } from '../lib/dates.js';
+import { useWorkspace } from '../lib/workspace.js';
 
 export function CalendarPage() {
   const params = useParams<{ id?: string }>();
@@ -26,8 +26,9 @@ export function CalendarPage() {
   const pieces = data?.items ?? [];
 
   const activeId = params.id ?? null;
+  const { slug } = useWorkspace();
 
-  useSSE(true);
+  useSSE(true, slug);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
   const reschedule = useReschedule();
@@ -67,13 +68,12 @@ export function CalendarPage() {
     t: () => setCursor(new Date()),
     r: () => {
       const first = pieces.find((p) => p.status === 'IN_REVIEW');
-      if (first) navigate(`/piece/${first.id}`);
+      if (first) navigate(`/w/${slug}/piece/${first.id}`, { replace: true });
     },
   });
 
   return (
     <div className="min-h-screen">
-      <Header />
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[260px_1fr]">
         <div className="lg:order-2">
           <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
@@ -81,25 +81,25 @@ export function CalendarPage() {
             {isLoading ? (
               <p className="card text-sm text-qyro-text-muted">Cargando piezas…</p>
             ) : view === 'week' ? (
-              <WeekView cursor={cursor} pieces={pieces} onPick={(id) => navigate(`/piece/${id}`)} />
+              <WeekView cursor={cursor} pieces={pieces} onPick={(id) => navigate(`/w/${slug}/piece/${id}`)} />
             ) : view === 'month' ? (
               <MonthView
                 cursor={cursor}
                 pieces={pieces}
-                onPick={(id) => navigate(`/piece/${id}`)}
+                onPick={(id) => navigate(`/w/${slug}/piece/${id}`)}
               />
             ) : (
-              <KanbanView pieces={pieces} onPick={(id) => navigate(`/piece/${id}`)} />
+              <KanbanView pieces={pieces} onPick={(id) => navigate(`/w/${slug}/piece/${id}`)} />
             )}
             <ShortcutsHint />
           </DndContext>
         </div>
         <div className="lg:order-1">
-          <PendingSidebar onPick={(id) => navigate(`/piece/${id}`)} activeId={activeId} />
+          <PendingSidebar onPick={(id) => navigate(`/w/${slug}/piece/${id}`)} activeId={activeId} />
         </div>
       </div>
 
-      <ReviewDrawer pieceId={activeId} onClose={() => navigate('/calendar')} />
+      <ReviewDrawer pieceId={activeId} onClose={() => navigate(`/w/${slug}/calendar`)} />
     </div>
   );
 }

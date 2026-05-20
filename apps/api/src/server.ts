@@ -20,6 +20,7 @@ import oauthRoutes from './routes/oauth.js';
 import qcRoutes from './routes/qc.js';
 import sseRoutes from './routes/sse.js';
 import webhooksRoutes from './routes/webhooks.js';
+import workspacesRoutes from './routes/workspaces.js';
 
 export async function buildServer() {
   const config = loadConfig();
@@ -38,6 +39,7 @@ export async function buildServer() {
 
   await app.register(healthRoutes);
   await app.register(authRoutes, { prefix: '/api/v1/auth' });
+  await app.register(workspacesRoutes, { prefix: '/api/v1' });
   await app.register(ingestRoutes, { prefix: '/api/v1' });
   await app.register(contentPiecesRoutes, { prefix: '/api/v1' });
   await app.register(qcRoutes, { prefix: '/api/v1' });

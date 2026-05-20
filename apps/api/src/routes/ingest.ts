@@ -7,22 +7,25 @@ import { hasBlockers, validateIngestPayload } from '../ingest/validate.js';
 /**
  * Endpoint de ingest del Estudio Creativo (SESIÓN 2).
  *
+ * Auth: X-Service-API-Key de workspace (WorkspaceApiKey). La key resuelve
+ * automáticamente el workspace_id — el Estudio no necesita pasarlo en el body.
+ *
  * Flujo:
- *   1. Auth service-to-service vía X-Service-API-Key.
- *   2. Valida payload contra schema Zod.
- *   3. Valida cruzado contra límites de cada plataforma (ratio, duración,
- *      hashtags, caption length).
+ *   1. Auth por WorkspaceApiKey → req.workspace populated.
+ *   2. Valida payload Zod.
+ *   3. Valida cruzado contra límites de plataforma (ratio, duración, hashtags, caption).
  *   4. Si hay BLOCKERS → 400 con detalle.
  *   5. Persiste atómicamente (ContentPiece + N PlatformVariants + AuditLog).
- *   6. Idempotente por external_ref: si ya existe devuelve la misma pieza con
- *      duplicated: true y status actual.
- *   7. Emite evento SSE `content-piece.ingested` y persiste en NotificationDelivery.
+ *   6. Idempotente por (workspaceId, external_ref).
+ *   7. Emite evento SSE `content-piece.ingested`.
  */
 export default async function ingestRoutes(app: FastifyInstance) {
   app.post(
     '/content-pieces/ingest',
-    { preHandler: [app.requireServiceKey] },
+    { preHandler: [app.requireWorkspaceApiKey] },
     async (req, reply) => {
+      const workspaceId = req.workspace!.id;
+
       const parsed = ingestPayloadSchema.safeParse(req.body);
       if (!parsed.success) {
         reply.code(400);
@@ -34,10 +37,7 @@ export default async function ingestRoutes(app: FastifyInstance) {
 
       if (hasBlockers(issues)) {
         app.log.warn(
-          {
-            externalRef: payload.external_ref,
-            issues: issues.filter((i) => i.severity === 'blocker'),
-          },
+          { externalRef: payload.external_ref, workspaceId, issues: issues.filter((i) => i.severity === 'blocker') },
           'ingest rechazado por validación',
         );
         reply.code(400);
@@ -53,16 +53,15 @@ export default async function ingestRoutes(app: FastifyInstance) {
         const { contentPiece, duplicated } = await persistIngest(
           payload,
           issues.filter((i) => i.severity === 'warning'),
+          workspaceId,
         );
 
         if (duplicated) {
-          app.log.info(
-            { externalRef: payload.external_ref, contentPieceId: contentPiece.id },
-            'ingest idempotente: pieza ya existía',
-          );
+          app.log.info({ externalRef: payload.external_ref, workspaceId }, 'ingest idempotente');
           reply.code(200);
           return {
             duplicated: true,
+            workspace_id: workspaceId,
             content_piece_id: contentPiece.id,
             external_ref: payload.external_ref,
             status: contentPiece.status,
@@ -70,16 +69,14 @@ export default async function ingestRoutes(app: FastifyInstance) {
         }
 
         app.log.info(
-          {
-            externalRef: payload.external_ref,
-            contentPieceId: contentPiece.id,
-            variants: contentPiece.variants.length,
-          },
+          { externalRef: payload.external_ref, workspaceId, contentPieceId: contentPiece.id },
           'ingest aceptado',
         );
         reply.code(201);
         return {
           accepted: true,
+          workspace_id: workspaceId,
+          workspace_slug: req.workspace!.slug,
           content_piece_id: contentPiece.id,
           external_ref: payload.external_ref,
           status: contentPiece.status,
@@ -91,21 +88,11 @@ export default async function ingestRoutes(app: FastifyInstance) {
           warnings: issues.filter((i) => i.severity === 'warning'),
         };
       } catch (err) {
-        // Race condition: dos requests concurrentes con el mismo external_ref.
-        // Prisma devuelve P2002 (unique violation). Tratamos como duplicado.
         if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-          app.log.info(
-            { externalRef: payload.external_ref },
-            'ingest race condition resuelta como duplicado',
-          );
           reply.code(200);
-          return {
-            duplicated: true,
-            external_ref: payload.external_ref,
-            note: 'Procesamiento concurrente detectado.',
-          };
+          return { duplicated: true, external_ref: payload.external_ref, workspace_id: workspaceId };
         }
-        app.log.error({ err, externalRef: payload.external_ref }, 'ingest falló al persistir');
+        app.log.error({ err, externalRef: payload.external_ref, workspaceId }, 'ingest falló');
         reply.code(500);
         return { error: 'INTERNAL', external_ref: payload.external_ref };
       }

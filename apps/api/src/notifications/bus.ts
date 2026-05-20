@@ -1,17 +1,9 @@
 import { EventEmitter } from 'node:events';
 import { type Prisma, prisma } from '@qyro/db';
 
-/**
- * Bus de eventos in-memory para SSE.
- *
- * Decisión consciente: el sistema es single-tenant + single-server (ADR 0001), así que
- * un EventEmitter basta. Si en el futuro escala a multi-server, sustituir por Redis
- * pub/sub sin tocar las rutas (`subscribe`/`emitEvent`).
- *
- * Cada evento se persiste también en `NotificationDelivery` para que la PWA pueda
- * mostrar histórico aunque haya estado cerrada.
- */
-export type NotificationEvent =
+export type NotificationEvent = {
+  workspaceId: string;
+} & (
   | {
       kind: 'content-piece.ingested';
       data: {
@@ -26,7 +18,8 @@ export type NotificationEvent =
   | {
       kind: 'content-piece.status-changed';
       data: { contentPieceId: string; from: string; to: string };
-    };
+    }
+);
 
 class NotificationBus {
   private emitter = new EventEmitter();
@@ -45,6 +38,7 @@ class NotificationBus {
     try {
       await prisma.notificationDelivery.create({
         data: {
+          workspaceId: event.workspaceId,
           channelKind: 'PUSH',
           event: event.kind,
           payloadJson: event.data as unknown as Prisma.InputJsonValue,
@@ -52,7 +46,6 @@ class NotificationBus {
         },
       });
     } catch (err) {
-      // Persistir el delivery no debe bloquear el evento en vivo. Loguea y sigue.
       console.error('NotificationBus: fallo al persistir delivery', err);
     }
   }

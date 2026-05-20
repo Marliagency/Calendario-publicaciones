@@ -6,6 +6,7 @@ import { type Prisma, prisma } from '@qyro/db';
  */
 export async function recordStatusChange(params: {
   contentPieceId: string;
+  workspaceId: string;
   fromStatus: string | null;
   toStatus: string;
   actorUserId: string | null;
@@ -14,6 +15,7 @@ export async function recordStatusChange(params: {
 }): Promise<void> {
   await prisma.auditLog.create({
     data: {
+      workspaceId: params.workspaceId,
       entityType: 'ContentPiece',
       entityId: params.contentPieceId,
       contentPieceId: params.contentPieceId,

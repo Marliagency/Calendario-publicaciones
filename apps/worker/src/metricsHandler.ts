@@ -8,22 +8,16 @@ export interface MetricsJobInput {
   platformVariantIds?: string[];
 }
 
-/**
- * Handler del job metrics-pull (cron diario o trigger manual).
- *
- * Para cada variante publicada (o las indicadas):
- *   1. Llama al adapter `fetchInsights` (mock genera números plausibles).
- *   2. Persiste un registro `Metric` (kind=ORGANIC) con `dataJson` crudo.
- *   3. Si la pieza tiene AdCampaign activa, también persiste métrica PAID
- *      simulada y reconcilia `BoostSpendLedger` (mueve committed → spend).
- */
 export async function handleMetricsJob(input: MetricsJobInput): Promise<{ processed: number }> {
   const variants = await prisma.platformVariant.findMany({
     where: {
       ...(input.platformVariantIds?.length ? { id: { in: input.platformVariantIds } } : {}),
       publishedAt: { not: null },
     },
-    include: { adCampaigns: { where: { status: 'ACTIVE' } } },
+    include: {
+      adCampaigns: { where: { status: 'ACTIVE' } },
+      contentPiece: { select: { workspaceId: true } },
+    },
   });
 
   let processed = 0;
@@ -44,7 +38,8 @@ export async function handleMetricsJob(input: MetricsJobInput): Promise<{ proces
       },
     });
 
-    // Si hay ad activa, mock spend + reconciliar ledger.
+    const workspaceId = v.contentPiece.workspaceId;
+
     for (const camp of v.adCampaigns) {
       const dailyCents = camp.dailyBudgetCents ?? 100;
       const spentToday = Math.round(dailyCents * (0.6 + Math.random() * 0.4));
@@ -69,8 +64,9 @@ export async function handleMetricsJob(input: MetricsJobInput): Promise<{ proces
         Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
       );
       await prisma.boostSpendLedger.upsert({
-        where: { date_platform: { date: dayStart, platform: camp.platform } },
+        where: { workspaceId_date_platform: { workspaceId, date: dayStart, platform: camp.platform } },
         create: {
+          workspaceId,
           date: dayStart,
           platform: camp.platform,
           spendCents: spentToday,

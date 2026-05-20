@@ -173,6 +173,37 @@ const mockUnreadCount = { in_review: 1, unread_deliveries: 0 };
 
 const mockQcRun = { automatic: [], manual: [] };
 
+const mockWorkspaces = {
+  items: [
+    {
+      id: 'ws_qyro',
+      slug: 'qyro',
+      name: 'QYRO',
+      description: 'Calendario social de QYRO',
+      brandColorPrimary: '#3B82F6',
+      brandColorSecondary: '#7C5CFC',
+      brandLogoUrl: null,
+      status: 'ACTIVE',
+      role: 'OWNER',
+      inReviewCount: 1,
+      lastActiveAt: new Date().toISOString(),
+    },
+    {
+      id: 'ws_diego-personal',
+      slug: 'diego-personal',
+      name: 'Diego personal',
+      description: 'Cuenta personal de Diego',
+      brandColorPrimary: '#111111',
+      brandColorSecondary: '#444444',
+      brandLogoUrl: null,
+      status: 'ACTIVE',
+      role: 'OWNER',
+      inReviewCount: 0,
+      lastActiveAt: null,
+    },
+  ],
+};
+
 export function isMockApiEnabled(): boolean {
   return import.meta.env.VITE_MOCK_API === '1';
 }
@@ -184,6 +215,12 @@ export function tryMockApi<T>(path: string, init: RequestInit): T | undefined {
   const p = url.pathname;
 
   if (p === '/api/v1/auth/me' && method === 'GET') return mockMe as T;
+  if (p === '/api/v1/workspaces' && method === 'GET') return mockWorkspaces as T;
+  const wsDetailMatch = p.match(/^\/api\/v1\/workspaces\/([^/]+)$/);
+  if (wsDetailMatch && method === 'GET') {
+    const ws = mockWorkspaces.items.find((w) => w.slug === wsDetailMatch[1]);
+    if (ws) return { workspace: { ...ws, defaultTimezone: 'Europe/Madrid', defaultLanguage: 'es-ES', dailyBoostCapEur: 5, monthlyBoostCapEur: 150, members: [] }, role: ws.role } as T;
+  }
   if (p === '/api/v1/notifications/unread-count') return mockUnreadCount as T;
   if (p === '/api/v1/dashboard') return mockDashboard as T;
   if (p === '/api/v1/audience-presets') return { items: mockAudiencePresets.items } as T;

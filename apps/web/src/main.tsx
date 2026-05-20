@@ -10,11 +10,13 @@ import {
   useRouteError,
 } from 'react-router-dom';
 import './styles/global.css';
-import { App } from './App.js';
 import { RequireAuth } from './lib/auth.jsx';
+import { WorkspaceLayout } from './components/WorkspaceLayout.js';
 import { CalendarPage } from './pages/CalendarPage.js';
 import { DashboardPage } from './pages/DashboardPage.js';
 import { LoginPage } from './pages/LoginPage.js';
+import { WorkspaceRedirectPage } from './pages/WorkspaceRedirectPage.js';
+import { CreateWorkspacePage } from './pages/workspace/CreateWorkspacePage.js';
 
 function ErrorPage() {
   const error = useRouteError();
@@ -33,8 +35,8 @@ function ErrorPage() {
           ? 'La URL no corresponde a ninguna pantalla del calendario.'
           : 'Algo no esperado ocurrió al cargar esta pantalla. Vuelve al calendario y prueba de nuevo.'}
       </p>
-      <button type="button" onClick={() => navigate('/calendar')} className="btn-primary text-sm">
-        Volver al calendario
+      <button type="button" onClick={() => navigate('/')} className="btn-primary text-sm">
+        Volver al inicio
       </button>
     </div>
   );
@@ -43,21 +45,33 @@ function ErrorPage() {
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
     errorElement: <ErrorPage />,
     children: [
       { path: 'login', element: <LoginPage /> },
       {
         element: <RequireAuth />,
         children: [
-          { index: true, element: <CalendarPage /> },
-          { path: 'calendar', element: <CalendarPage /> },
-          { path: 'piece/:id', element: <CalendarPage /> },
-          { path: 'dashboard', element: <DashboardPage /> },
+          // Root redirects to last workspace (or creation wizard).
+          { index: true, element: <WorkspaceRedirectPage /> },
+          // Workspace creation wizard (outside of workspace layout).
+          { path: 'workspaces/new', element: <CreateWorkspacePage /> },
+          // All workspace-scoped pages live under /w/:slug/
+          {
+            path: 'w/:slug',
+            element: <WorkspaceLayout />,
+            children: [
+              { index: true, element: <Navigate to="calendar" replace /> },
+              { path: 'calendar', element: <CalendarPage /> },
+              { path: 'piece/:id', element: <CalendarPage /> },
+              { path: 'dashboard', element: <DashboardPage /> },
+            ],
+          },
         ],
       },
-      // Catch-all: cualquier path desconocido redirige al calendario.
-      { path: '*', element: <Navigate to="/calendar" replace /> },
+      // Legacy redirects: old /calendar and /dashboard go to root (which redirects to workspace).
+      { path: 'calendar', element: <Navigate to="/" replace /> },
+      { path: 'dashboard', element: <Navigate to="/" replace /> },
+      { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
 ]);

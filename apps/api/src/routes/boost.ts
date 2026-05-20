@@ -5,18 +5,10 @@ import { z } from 'zod';
 import { checkBudget, commitBudget } from '../boost/killSwitch.js';
 import { boostQueue } from '../queues.js';
 
-/**
- * Boost endpoints:
- *   - POST /content-pieces/:id/boost      → marcar pieza con presupuesto y encolar
- *   - GET  /boost/spend-summary           → estado del kill switch en vivo
- *   - GET  /audience-presets              → presets seedeados
- *
- * Presets de presupuesto pequeño:
- *   - 1€ x 3 días = 300 cents/día, 3 días = 900 cents totales
- *   - 2€ x 5 días = 200 cents/día, 5 días = 1000 cents totales
- */
 export default async function boostRoutes(app: FastifyInstance) {
-  app.post('/content-pieces/:id/boost', { preHandler: [app.requireUser] }, async (req, reply) => {
+  const wm = app.requireWorkspaceMember();
+
+  app.post('/content-pieces/:id/boost', { preHandler: [app.requireUser, wm] }, async (req, reply) => {
     const { id } = z.object({ id: z.string().min(1) }).parse(req.params);
     const body = z
       .object({
@@ -27,11 +19,12 @@ export default async function boostRoutes(app: FastifyInstance) {
       })
       .parse(req.body);
 
+    const workspaceId = req.workspace!.id;
     const piece = await prisma.contentPiece.findUnique({
       where: { id },
       include: { variants: true },
     });
-    if (!piece) {
+    if (!piece || piece.workspaceId !== workspaceId) {
       reply.code(404);
       return { error: 'NOT_FOUND' };
     }
@@ -43,7 +36,11 @@ export default async function boostRoutes(app: FastifyInstance) {
     const platform = VARIANT_TO_PLATFORM[firstVariant.kind];
     const totalCents = Math.round(body.dailyBudgetEur * body.durationDays * 100);
 
-    const budget = await checkBudget(totalCents, platform);
+    const caps = {
+      dailyCapEur: req.workspace!.dailyBoostCapEur,
+      monthlyCapEur: req.workspace!.monthlyBoostCapEur,
+    };
+    const budget = await checkBudget(totalCents, platform, workspaceId, caps);
     if (!budget.allowed) {
       app.log.warn(
         { contentPieceId: id, totalCents, platform, reason: budget.reason },
@@ -62,11 +59,12 @@ export default async function boostRoutes(app: FastifyInstance) {
         boostAudiencePresetId: body.audiencePresetId,
       },
     });
-    await commitBudget(totalCents, platform);
+    await commitBudget(totalCents, platform, workspaceId);
     await boostQueue().add(
       'boost',
       {
         contentPieceId: id,
+        workspaceId,
         audiencePresetId: body.audiencePresetId,
         dailyBudgetCents: Math.round(body.dailyBudgetEur * 100),
         durationDays: body.durationDays,
@@ -79,22 +77,25 @@ export default async function boostRoutes(app: FastifyInstance) {
       },
     );
 
-    app.log.info({ contentPieceId: id, totalCents }, 'boost encolado');
-    return {
-      accepted: true,
-      contentPieceId: id,
-      totalCents,
-      budget,
+    app.log.info({ contentPieceId: id, totalCents, workspaceId }, 'boost encolado');
+    return { accepted: true, contentPieceId: id, totalCents, budget };
+  });
+
+  app.get('/boost/spend-summary', { preHandler: [app.requireUser, wm] }, async (req) => {
+    const workspaceId = req.workspace!.id;
+    const caps = {
+      dailyCapEur: req.workspace!.dailyBoostCapEur,
+      monthlyCapEur: req.workspace!.monthlyBoostCapEur,
     };
+    return checkBudget(0, 'instagram', workspaceId, caps);
   });
 
-  app.get('/boost/spend-summary', { preHandler: [app.requireUser] }, async () => {
-    const r = await checkBudget(0, 'instagram');
-    return r;
-  });
-
-  app.get('/audience-presets', { preHandler: [app.requireUser] }, async () => {
-    const items = await prisma.audiencePreset.findMany({ orderBy: { name: 'asc' } });
+  app.get('/audience-presets', { preHandler: [app.requireUser, wm] }, async (req) => {
+    const workspaceId = req.workspace!.id;
+    const items = await prisma.audiencePreset.findMany({
+      where: { workspaceId },
+      orderBy: { name: 'asc' },
+    });
     return { items };
   });
 }

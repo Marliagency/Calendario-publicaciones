@@ -9,7 +9,7 @@ const configSchema = z.object({
   API_BASE_URL: z.string().url().default('http://localhost:3001'),
   WEB_BASE_URL: z.string().url().default('http://localhost:5173'),
 
-  INGEST_SERVICE_API_KEY: z.string().min(16),
+  INGEST_SERVICE_API_KEY: z.string().min(16).optional(), // Reemplazado por WorkspaceApiKey
 
   JWT_ACCESS_SECRET: z.string().min(16),
   JWT_REFRESH_SECRET: z.string().min(16),

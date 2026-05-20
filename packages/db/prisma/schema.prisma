@@ -1,12 +1,11 @@
-// QYRO Social Calendar — schema completo
+// QYRO Social Calendar — schema completo v2 (multi-workspace)
 //
 // Convenciones:
 //   - IDs: cuid() para URLs amigables y orden temporal.
-//   - timestamps: created_at + updated_at en todas las entidades de dominio.
-//   - JSON: usado sólo para datos opacos (métricas crudas, params de reglas QC,
-//     metadata del estudio creativo). Lo estructurable va en columnas tipadas.
-//   - Cascadas: borrar una pieza borra sus variantes, jobs y métricas. No se borran
-//     campañas ni personas en cascada.
+//   - timestamps: createdAt + updatedAt en todas las entidades de dominio.
+//   - JSON: usado sólo para datos opacos. Lo estructurable va en columnas tipadas.
+//   - Cascadas: borrar un workspace borra todo su contenido (ON DELETE CASCADE).
+//   - Aislamiento: TODA query de contenido lleva workspaceId en el WHERE.
 
 generator client {
   provider = "prisma-client-js"
@@ -18,19 +17,20 @@ datasource db {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Auth (admin de la PWA — single-tenant)
+// Auth (admin de la PWA)
 // ─────────────────────────────────────────────────────────────────────────────
 
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  passwordHash  String
-  displayName   String
-  isAdmin       Boolean        @default(true)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  refreshTokens RefreshToken[]
-  auditLogs     AuditLog[]
+  id               String            @id @default(cuid())
+  email            String            @unique
+  passwordHash     String
+  displayName      String
+  isAdmin          Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  refreshTokens    RefreshToken[]
+  auditLogs        AuditLog[]
+  workspaceMembers WorkspaceMember[]
 }
 
 model RefreshToken {
@@ -43,6 +43,86 @@ model RefreshToken {
   createdAt DateTime  @default(now())
 
   @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Workspaces (multi-tenancy)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum WorkspaceStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum WorkspaceRole {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model Workspace {
+  id                  String          @id @default(cuid())
+  slug                String          @unique
+  name                String
+  description         String?
+  brandColorPrimary   String          @default("#3B82F6")
+  brandColorSecondary String          @default("#7C5CFC")
+  brandLogoUrl        String?
+  defaultTimezone     String          @default("Europe/Madrid")
+  defaultLanguage     String          @default("es-ES")
+  dailyBoostCapEur    Decimal         @default(5) @db.Decimal(8, 2)
+  monthlyBoostCapEur  Decimal         @default(150) @db.Decimal(8, 2)
+  status              WorkspaceStatus @default(ACTIVE)
+  createdByUserId     String?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  members          WorkspaceMember[]
+  apiKeys          WorkspaceApiKey[]
+  socialAccounts   SocialAccount[]
+  contentPieces    ContentPiece[]
+  buyerPersonas    BuyerPersona[]
+  campaigns        Campaign[]
+  qcRules          QCRule[]
+  auditLogs        AuditLog[]
+  notifications             NotificationChannel[]
+  audiencePresets           AudiencePreset[]
+  spendLedger               BoostSpendLedger[]
+  notificationDeliveries    NotificationDelivery[]
+}
+
+model WorkspaceMember {
+  id           String        @id @default(cuid())
+  workspaceId  String
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role         WorkspaceRole @default(EDITOR)
+  invitedAt    DateTime      @default(now())
+  acceptedAt   DateTime?
+  lastActiveAt DateTime?
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+}
+
+/// Claves de API por workspace para la integración con el Estudio Creativo (ingest).
+/// La clave raw se muestra UNA sola vez; aquí sólo se guarda el hash SHA-256.
+model WorkspaceApiKey {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  keyHash     String    @unique
+  prefix      String    // primeros 12 chars de la clave raw (identificación visual)
+  name        String    @default("Estudio Creativo")
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([workspaceId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -64,15 +144,14 @@ enum SocialAccountStatus {
 
 model SocialAccount {
   id                    String              @id @default(cuid())
+  workspaceId           String
+  workspace             Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   platform              Platform
   handle                String
-  // Meta-specific
   businessId            String?
   pageId                String?
   igUserId              String?
-  // TikTok-specific
   ttAdvertiserId        String?
-  // Tokens cifrados con AES-256-GCM (TOKEN_ENCRYPTION_KEY)
   accessTokenEncrypted  String
   refreshTokenEncrypted String?
   tokenExpiresAt        DateTime?
@@ -83,7 +162,9 @@ model SocialAccount {
 
   variants PlatformVariant[]
 
+  // Misma cuenta (handle+platform) sólo puede estar en un workspace a la vez.
   @@unique([platform, handle])
+  @@index([workspaceId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -91,7 +172,9 @@ model SocialAccount {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model BuyerPersona {
-  id                 String                     @id
+  id                 String                     @id @default(cuid())
+  workspaceId        String
+  workspace          Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   name               String
   ageRange           String
   pains              String[]
@@ -105,10 +188,14 @@ model BuyerPersona {
   createdAt          DateTime                   @default(now())
   updatedAt          DateTime                   @updatedAt
   contentPieces      ContentPieceBuyerPersona[]
+
+  @@index([workspaceId])
 }
 
 model Campaign {
   id            String         @id @default(cuid())
+  workspaceId   String
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   name          String
   objective     String
   startAt       DateTime
@@ -118,6 +205,8 @@ model Campaign {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   contentPieces ContentPiece[]
+
+  @@index([workspaceId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -155,8 +244,10 @@ enum BoostObjective {
 
 model ContentPiece {
   id                    String          @id @default(cuid())
-  /// UUID enviado por el Estudio Creativo (SESIÓN 2). Garantiza idempotencia.
-  externalRef           String?         @unique
+  workspaceId           String
+  workspace             Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  /// UUID enviado por el Estudio Creativo. Garantiza idempotencia por workspace.
+  externalRef           String?
   title                 String
   format                ContentFormat
   status                ContentStatus   @default(DRAFT)
@@ -166,7 +257,6 @@ model ContentPiece {
   frameworkUsed         String?
   hookUsed              String?
   qcChecklistJson       Json?
-  /// Presupuesto opcional de boost. Si > 0, al pasar a PUBLISHED se encola job de boost.
   boostBudgetEur        Decimal?        @db.Decimal(8, 2)
   boostDurationDays     Int?
   boostObjective        BoostObjective?
@@ -181,12 +271,13 @@ model ContentPiece {
   variants      PlatformVariant[]
   auditLogs     AuditLog[]
 
-  @@index([status])
+  // externalRef único por workspace (distintos workspaces pueden tener el mismo ref).
+  @@unique([workspaceId, externalRef])
+  @@index([workspaceId, status])
   @@index([campaignId])
   @@index([createdAt])
 }
 
-/// Tabla pivote ContentPiece ↔ BuyerPersona (N:M).
 model ContentPieceBuyerPersona {
   contentPieceId String
   buyerPersonaId String
@@ -215,7 +306,6 @@ model PlatformVariant {
   id              String              @id @default(cuid())
   contentPieceId  String
   contentPiece    ContentPiece        @relation(fields: [contentPieceId], references: [id], onDelete: Cascade)
-  /// Variante específica (placement). `tiktok`, `instagram_reel`, etc.
   kind            PlatformVariantKind
   mediaUrl        String
   mediaType       MediaType
@@ -227,9 +317,7 @@ model PlatformVariant {
   musicRef        String?
   scheduledAt     DateTime?
   publishedAt     DateTime?
-  /// ID del post en la red (devuelto por la API tras publicar con éxito).
   platformPostId  String?
-  /// ID interno del vídeo en la red (necesario para Spark Ads en TikTok).
   platformVideoId String?
   socialAccountId String?
   socialAccount   SocialAccount?      @relation(fields: [socialAccountId], references: [id], onDelete: SetNull)
@@ -264,11 +352,9 @@ model PublishJob {
   status            PublishJobStatus @default(PENDING)
   attempt           Int              @default(0)
   lastError         String?
-  /// Container ID temporal de Meta (fase de creación de container antes de publicar).
   containerId       String?
   scheduledAt       DateTime
   publishedAt       DateTime?
-  /// hash(content_piece_id + platform + scheduled_at) — bloquea duplicados.
   idempotencyKey    String           @unique
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
@@ -293,7 +379,6 @@ model AdCampaign {
   platformVariantId   String
   platformVariant     PlatformVariant  @relation(fields: [platformVariantId], references: [id], onDelete: Cascade)
   platform            Platform
-  /// Referencias externas (Meta Marketing API / TikTok Marketing API).
   externalCampaignId  String?
   externalAdsetId     String?
   externalAdId        String?
@@ -312,37 +397,40 @@ model AdCampaign {
   @@index([startedAt])
 }
 
-/// Registro diario de gasto en boost — usado por el kill switch para enforcement.
-/// Se reconcilia contra Meta/TT diariamente.
+/// Kill switch por workspace: (workspaceId, date, platform) únicos.
 model BoostSpendLedger {
-  id             String   @id @default(cuid())
-  /// Día (YYYY-MM-DD en TZ del sistema). Único para upsert.
-  date           DateTime @db.Date
+  id             String    @id @default(cuid())
+  workspaceId    String
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  date           DateTime  @db.Date
   platform       Platform
-  spendCents     Int      @default(0)
-  /// `committed_cents` cuenta presupuestos ya encolados pendientes de gasto real.
-  committedCents Int      @default(0)
-  updatedAt      DateTime @updatedAt
+  spendCents     Int       @default(0)
+  committedCents Int       @default(0)
+  updatedAt      DateTime  @updatedAt
 
-  @@unique([date, platform])
+  @@unique([workspaceId, date, platform])
 }
 
 model AudiencePreset {
-  id                    String   @id
+  id                    String    @id @default(cuid())
+  workspaceId           String
+  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   name                  String
   geo                   String[]
   ageMin                Int
   ageMax                Int
   languages             String[]
   interestsMeta         String[]
-  interestsTiktok       String[] @default([])
+  interestsTiktok       String[]  @default([])
   behaviors             String[]
   placementsRecommended String[]
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   adCampaigns   AdCampaign[]
   contentPieces ContentPiece[]
+
+  @@index([workspaceId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -360,7 +448,6 @@ model Metric {
   platformVariant   PlatformVariant @relation(fields: [platformVariantId], references: [id], onDelete: Cascade)
   fetchedAt         DateTime        @default(now())
   kind              MetricKind
-  /// Métricas crudas tal cual las devuelve la red (impressions, reach, likes, ...).
   dataJson          Json
 
   @@index([platformVariantId, fetchedAt])
@@ -391,6 +478,8 @@ enum QCRuleSeverity {
 
 model QCRule {
   id                 String                @id @default(cuid())
+  workspaceId        String
+  workspace          Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   name               String
   description        String?
   appliesToFormats   ContentFormat[]
@@ -401,14 +490,18 @@ model QCRule {
   enabled            Boolean               @default(true)
   createdAt          DateTime              @default(now())
   updatedAt          DateTime              @updatedAt
+
+  @@index([workspaceId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AuditLog (cambios de estado)
+// AuditLog
 // ─────────────────────────────────────────────────────────────────────────────
 
 model AuditLog {
   id             String        @id @default(cuid())
+  workspaceId    String?
+  workspace      Workspace?    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   entityType     String
   entityId       String
   fromStatus     String?
@@ -423,10 +516,11 @@ model AuditLog {
 
   @@index([entityType, entityId])
   @@index([contentPieceId])
+  @@index([workspaceId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Notificaciones (push in-app + futuros canales)
+// Notificaciones
 // ─────────────────────────────────────────────────────────────────────────────
 
 enum NotificationChannelKind {
@@ -439,24 +533,30 @@ enum NotificationChannelKind {
 
 model NotificationChannel {
   id               String                  @id @default(cuid())
+  workspaceId      String
+  workspace        Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   kind             NotificationChannelKind
   target           String
   eventsSubscribed String[]
   active           Boolean                 @default(true)
   createdAt        DateTime                @default(now())
   updatedAt        DateTime                @updatedAt
+
+  @@index([workspaceId])
 }
 
 model NotificationDelivery {
   id          String                  @id @default(cuid())
+  workspaceId String
+  workspace   Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   channelKind NotificationChannelKind
   event       String
   payloadJson Json
-  /// `null` mientras está pendiente; timestamp cuando se ha entregado.
   deliveredAt DateTime?
   readAt      DateTime?
   createdAt   DateTime                @default(now())
 
+  @@index([workspaceId])
   @@index([deliveredAt])
   @@index([readAt])
 }

@@ -1,16 +1,39 @@
+import { createHash } from 'node:crypto';
+import { type WorkspaceRole, prisma } from '@qyro/db';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import fp from 'fastify-plugin';
 import { type AccessTokenClaims, verifyAccessToken } from '../auth/jwt.js';
 
+interface WorkspaceCtx {
+  id: string;
+  slug: string;
+  name: string;
+  role: WorkspaceRole | 'service';
+  brandColorPrimary: string;
+  dailyBoostCapEur: number;
+  monthlyBoostCapEur: number;
+}
+
 declare module 'fastify' {
   interface FastifyRequest {
     user?: AccessTokenClaims;
+    workspace?: WorkspaceCtx;
   }
   interface FastifyInstance {
     requireUser: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
-    requireServiceKey: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    requireWorkspaceMember: (
+      minRole?: WorkspaceRole,
+    ) => (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    requireWorkspaceApiKey: (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
 }
+
+const ROLE_RANK: Record<WorkspaceRole, number> = {
+  VIEWER: 0,
+  EDITOR: 1,
+  ADMIN: 2,
+  OWNER: 3,
+};
 
 export default fp(async function authPlugin(app: FastifyInstance) {
   app.decorate('requireUser', async (req: FastifyRequest, reply: FastifyReply) => {
@@ -28,25 +51,86 @@ export default fp(async function authPlugin(app: FastifyInstance) {
     }
   });
 
-  app.decorate('requireServiceKey', async (req: FastifyRequest, reply: FastifyReply) => {
-    const provided = req.headers['x-service-api-key'];
-    const expected = process.env.INGEST_SERVICE_API_KEY ?? '';
-    if (!provided || typeof provided !== 'string') {
+  app.decorate(
+    'requireWorkspaceMember',
+    (minRole: WorkspaceRole = 'VIEWER') =>
+      async (req: FastifyRequest, reply: FastifyReply) => {
+        if (!req.user) {
+          reply.code(401);
+          throw new Error('UNAUTHENTICATED');
+        }
+        const slug =
+          (req.headers['x-workspace-slug'] as string | undefined) ??
+          (req.query as Record<string, string>)['ws'];
+        if (!slug) {
+          reply.code(400);
+          throw new Error('MISSING_WORKSPACE');
+        }
+
+        const membership = await prisma.workspaceMember.findFirst({
+          where: {
+            workspace: { slug },
+            userId: req.user.sub,
+            acceptedAt: { not: null },
+          },
+          include: { workspace: true },
+        });
+
+        if (!membership) {
+          reply.code(403);
+          throw new Error('NOT_A_MEMBER');
+        }
+
+        if (ROLE_RANK[membership.role] < ROLE_RANK[minRole]) {
+          reply.code(403);
+          throw new Error('INSUFFICIENT_ROLE');
+        }
+
+        await prisma.workspaceMember.update({
+          where: { id: membership.id },
+          data: { lastActiveAt: new Date() },
+        });
+
+        req.workspace = {
+          id: membership.workspaceId,
+          slug: membership.workspace.slug,
+          name: membership.workspace.name,
+          role: membership.role,
+          brandColorPrimary: membership.workspace.brandColorPrimary,
+          dailyBoostCapEur: Number(membership.workspace.dailyBoostCapEur),
+          monthlyBoostCapEur: Number(membership.workspace.monthlyBoostCapEur),
+        };
+      },
+  );
+
+  // Para el ingest del Estudio Creativo: autenticación por API key de workspace.
+  app.decorate('requireWorkspaceApiKey', async (req: FastifyRequest, reply: FastifyReply) => {
+    const raw = req.headers['x-service-api-key'];
+    if (!raw || typeof raw !== 'string') {
       reply.code(401);
       throw new Error('UNAUTHENTICATED');
     }
-    // timing-safe comparison
-    if (provided.length !== expected.length) {
+    const keyHash = createHash('sha256').update(raw).digest('hex');
+    const apiKey = await prisma.workspaceApiKey.findUnique({
+      where: { keyHash },
+      include: { workspace: true },
+    });
+    if (!apiKey || apiKey.revokedAt) {
       reply.code(401);
-      throw new Error('UNAUTHENTICATED');
+      throw new Error('INVALID_API_KEY');
     }
-    let mismatch = 0;
-    for (let i = 0; i < provided.length; i++) {
-      mismatch |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
-    }
-    if (mismatch !== 0) {
-      reply.code(401);
-      throw new Error('UNAUTHENTICATED');
-    }
+    await prisma.workspaceApiKey.update({
+      where: { id: apiKey.id },
+      data: { lastUsedAt: new Date() },
+    });
+    req.workspace = {
+      id: apiKey.workspaceId,
+      slug: apiKey.workspace.slug,
+      name: apiKey.workspace.name,
+      role: 'service',
+      brandColorPrimary: apiKey.workspace.brandColorPrimary,
+      dailyBoostCapEur: Number(apiKey.workspace.dailyBoostCapEur),
+      monthlyBoostCapEur: Number(apiKey.workspace.monthlyBoostCapEur),
+    };
   });
 });

@@ -17,6 +17,7 @@ export interface PublishJobData {
 
 export interface BoostJobData {
   contentPieceId: string;
+  workspaceId: string;
   audiencePresetId?: string;
   dailyBudgetCents: number;
   durationDays: number;

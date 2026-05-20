@@ -1,8 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useUnreadCount } from '../api/contentPieces.js';
 import { api } from '../lib/api.js';
 import { useMe } from '../lib/auth.jsx';
+import { WorkspaceSwitcher } from './WorkspaceSwitcher.js';
 
 export function Header() {
   const { data: me } = useMe();
@@ -10,6 +11,7 @@ export function Header() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const loc = useLocation();
+  const { slug = '' } = useParams<{ slug: string }>();
 
   async function logout() {
     await api('/api/v1/auth/logout', { method: 'POST' });
@@ -18,31 +20,22 @@ export function Header() {
   }
 
   const inReview = counts?.in_review ?? 0;
+  const base = slug ? `/w/${slug}` : '';
 
   return (
     <header className="sticky top-0 z-30 border-b border-qyro-border-subtle bg-qyro-bg-surface/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-card-sm bg-qyro-blue-500 font-bold text-white">
-            Q
-          </div>
-          <div className="leading-tight">
-            <p className="text-sm font-semibold text-qyro-text-primary">Social Calendar</p>
-            <p className="text-[11px] text-qyro-text-muted">QYRO</p>
-          </div>
+          <WorkspaceSwitcher />
         </div>
         <nav className="hidden gap-1 sm:flex">
           <NavLink
-            to="/calendar"
-            active={
-              loc.pathname.startsWith('/calendar') ||
-              loc.pathname === '/' ||
-              loc.pathname.startsWith('/piece')
-            }
+            to={`${base}/calendar`}
+            active={loc.pathname.includes('/calendar') || loc.pathname.includes('/piece')}
           >
             Calendario
           </NavLink>
-          <NavLink to="/dashboard" active={loc.pathname.startsWith('/dashboard')}>
+          <NavLink to={`${base}/dashboard`} active={loc.pathname.includes('/dashboard')}>
             Dashboard
           </NavLink>
         </nav>

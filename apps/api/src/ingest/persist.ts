@@ -17,24 +17,13 @@ export interface PersistResult {
   duplicated: boolean;
 }
 
-/**
- * Persiste el payload de ingest:
- *   - Si ya existe `ContentPiece` con ese `external_ref`, devuelve el existente sin
- *     duplicar (idempotencia §5 del brief).
- *   - Si no existe, crea `ContentPiece` + `PlatformVariant`s en una transacción.
- *   - Estado inicial: `IN_REVIEW` (el estudio ya hizo su QC interno; falta el humano).
- *   - Si trae `suggested_schedule`, lo guarda en cada variante (pero la pieza sigue
- *     en `IN_REVIEW` hasta aprobación).
- *   - Persiste warnings en `qcChecklistJson` para la UI de QC.
- *   - Loguea el cambio de estado en `AuditLog`.
- *   - Emite evento `content-piece.ingested` al bus de notificaciones.
- */
 export async function persistIngest(
   payload: IngestPayload,
   warnings: ValidationIssue[],
+  workspaceId: string,
 ): Promise<PersistResult> {
-  const existing = await prisma.contentPiece.findUnique({
-    where: { externalRef: payload.external_ref },
+  const existing = await prisma.contentPiece.findFirst({
+    where: { workspaceId, externalRef: payload.external_ref },
     include: { variants: true },
   });
   if (existing) {
@@ -49,6 +38,7 @@ export async function persistIngest(
   const piece = await prisma.$transaction(async (tx) => {
     const created = await tx.contentPiece.create({
       data: {
+        workspaceId,
         externalRef: payload.external_ref,
         title: payload.title,
         format: payload.format,
@@ -63,9 +53,7 @@ export async function persistIngest(
         createdBy: 'estudio-creativo',
         buyerPersonas:
           payload.buyer_persona_ids.length > 0
-            ? {
-                create: payload.buyer_persona_ids.map((id) => ({ buyerPersonaId: id })),
-              }
+            ? { create: payload.buyer_persona_ids.map((id) => ({ buyerPersonaId: id })) }
             : undefined,
         variants: { create: variantsData },
       },
@@ -74,6 +62,7 @@ export async function persistIngest(
 
     await tx.auditLog.create({
       data: {
+        workspaceId,
         entityType: 'ContentPiece',
         entityId: created.id,
         contentPieceId: created.id,
@@ -89,6 +78,7 @@ export async function persistIngest(
   });
 
   await notificationBus.emitEvent({
+    workspaceId,
     kind: 'content-piece.ingested',
     data: {
       contentPieceId: piece.id,

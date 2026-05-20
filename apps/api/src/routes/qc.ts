@@ -7,33 +7,34 @@ import {
   evaluateAutomaticRules,
 } from '../qc/evaluators.js';
 
-/**
- * Endpoints QC:
- *   - GET  /qc-rules                    → lista reglas activas
- *   - POST /content-pieces/:id/qc-run   → evalúa reglas auto contra una pieza
- */
 export default async function qcRoutes(app: FastifyInstance) {
-  app.get('/qc-rules', { preHandler: [app.requireUser] }, async () => {
+  const wm = app.requireWorkspaceMember();
+
+  app.get('/qc-rules', { preHandler: [app.requireUser, wm] }, async (req) => {
+    const workspaceId = req.workspace!.id;
     const items = await prisma.qCRule.findMany({
-      where: { enabled: true },
+      where: { workspaceId, enabled: true },
       orderBy: { severity: 'asc' },
     });
     return { items };
   });
 
-  app.post('/content-pieces/:id/qc-run', { preHandler: [app.requireUser] }, async (req, reply) => {
+  app.post('/content-pieces/:id/qc-run', { preHandler: [app.requireUser, wm] }, async (req, reply) => {
     const { id } = z.object({ id: z.string().min(1) }).parse(req.params);
+    const workspaceId = req.workspace!.id;
+
     const piece = await prisma.contentPiece.findUnique({
       where: { id },
       include: { variants: true },
     });
-    if (!piece) {
+    if (!piece || piece.workspaceId !== workspaceId) {
       reply.code(404);
       return { error: 'NOT_FOUND' };
     }
 
     const rules = await prisma.qCRule.findMany({
       where: {
+        workspaceId,
         enabled: true,
         appliesToFormats: { has: piece.format },
       },
@@ -57,8 +58,6 @@ export default async function qcRoutes(app: FastifyInstance) {
 
     const automatic = evaluateAutomaticRules(ruleSnapshots, variantSnapshots);
 
-    // Las reglas manuales se devuelven como checklist items que la UI muestra
-    // como checkboxes. La autoría manual va en `qcChecklistJson` cuando se aprueba.
     const manualRules = rules
       .filter((r) =>
         ['HOOK_IN_3S', 'CTA_PRESENT', 'THUMBNAIL_TEXT_READABLE', 'CAPTION_TYPOS'].includes(
